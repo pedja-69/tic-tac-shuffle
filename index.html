@@ -1052,8 +1052,9 @@ header h1 {
 
   <!-- Player name + Score strip -->
   <div class="score-strip" id="scoreStrip"></div>
-  <div style="margin-top:8px;text-align:center">
+  <div style="margin-top:8px;text-align:center;display:flex;gap:8px;justify-content:center">
     <button class="btn" onclick="shareGame()" data-i18n="shareGame" style="font-size:0.7rem;padding:6px 18px">📤 Share Game</button>
+    <a href="https://t.me/tictacshufflegame" target="_blank" class="btn" style="font-size:0.7rem;padding:6px 18px;text-decoration:none">📣 Telegram</a>
   </div>
 </div>
 
@@ -1397,7 +1398,7 @@ const TR = {
     rbDrawsText2: '<strong>Threefold repetition:</strong> If the same board position occurs three times (with the same player to move), the game is automatically a draw.',
     rbDrawsText3: '<strong>Draw offer:</strong> Either player may offer a draw at any time. The opponent may accept or decline.',
     rbCredits: 'Credits',
-    rbCreditsText: 'Game design by <em>Predrag Stevanović</em><br>Coded by <em>Claude AI</em>',
+    rbCreditsText: 'Game design by <em>Predrag Stevanović</em><br>Coded by <em>Claude AI</em><br><br><a href="https://t.me/tictacshufflegame" target="_blank" style="color:var(--gold)">📣 Join Telegram for updates</a>',
     // Mode badge
     ratedBadge: '⚔ Rated', casualBadge: '✦ Casual',
     // Opening rule
@@ -1502,7 +1503,7 @@ const TR = {
     rbDrawsText2: '<strong>Trostruko ponavljanje:</strong> Ako se ista pozicija na tabli pojavi tri puta (uz istog igrača na potezu), igra je automatski remi.',
     rbDrawsText3: '<strong>Ponuda remija:</strong> Bilo koji igrač može ponuditi remi u bilo kom trenutku. Protivnik može prihvatiti ili odbiti.',
     rbCredits: 'Autori',
-    rbCreditsText: 'Dizajn igre: <em>Predrag Stevanović</em><br>Kodirao: <em>Claude AI</em>',
+    rbCreditsText: 'Dizajn igre: <em>Predrag Stevanović</em><br>Kodirao: <em>Claude AI</em><br><br><a href="https://t.me/tictacshufflegame" target="_blank" style="color:var(--gold)">📣 Telegram kanal za novosti</a>',
     ratedBadge: '⚔ Rangirana', casualBadge: '✦ Slobodna',
     // Opening rule
     openingRule: 'Otvaranje',
@@ -2561,44 +2562,30 @@ async function shareSnapshot() {
 }
 
 async function shareGame() {
-  const html = document.documentElement.outerHTML;
-  const blob = new Blob([html], { type: 'text/html' });
-  const file = new File([blob], 'tic-tac-shuffle.html', { type: 'text/html' });
+  const url = 'https://pedja-69.github.io/tic-tac-shuffle/';
+  const text = t('shareGameText') + '\n' + url;
 
-  // Always try Web Share API with file first (works on Android Chrome)
   if (navigator.share) {
     try {
-      const shareData = { title: t('shareGameTitle'), text: t('shareGameText') };
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        shareData.files = [file];
-      }
-      await navigator.share(shareData);
+      await navigator.share({ title: t('shareGameTitle'), text, url });
       return;
     } catch(e) {
-      if (e.name !== 'AbortError') {
-        // Share failed for non-dismiss reason — fall through to download
-      } else {
-        return; // User dismissed, do nothing
-      }
+      if (e.name === 'AbortError') return;
     }
   }
 
-  // Fallback: download the file
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'tic-tac-shuffle.html';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-
-  // Brief visual feedback on the button
-  const btn = document.querySelector('[onclick="shareGame()"]');
-  if (btn) {
-    const orig = btn.textContent;
-    btn.textContent = '✓ Downloaded';
-    setTimeout(() => { btn.textContent = orig; }, 2000);
+  // Fallback: copy URL to clipboard
+  try {
+    await navigator.clipboard.writeText(text);
+    const btn = document.querySelector('[onclick="shareGame()"]');
+    if (btn) {
+      const orig = btn.innerHTML;
+      btn.innerHTML = '✓ ' + (lang === 'sr' ? 'Kopirano!' : 'Copied!');
+      setTimeout(() => { btn.innerHTML = orig; }, 2000);
+    }
+  } catch(e) {
+    // Last resort: prompt with URL
+    prompt(lang === 'sr' ? 'Kopiraj link:' : 'Copy link:', url);
   }
 }
 document.getElementById('rulebookOverlay').addEventListener('click', function(e) {
