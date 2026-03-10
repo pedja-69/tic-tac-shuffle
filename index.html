@@ -1182,9 +1182,6 @@ header h1 {
       <button class="btn" id="analyseBtn" onclick="enterAnalysis()" data-i18n="analyse" style="display:none">Analyse</button>
       <button class="btn btn-gold" onclick="restartGame()" data-i18n="playAgain">Play Again</button>
     </div>
-    <div class="btn-row" style="margin-top:6px">
-      <button class="btn" onclick="shareSnapshot()" data-i18n="shareSnapshot">📸 Share Result</button>
-    </div>
   </div>
 </div>
 
@@ -2469,98 +2466,6 @@ function closeRulebook() {
 // ═══════════════════════════════════════════════════
 //  SHARE
 // ═══════════════════════════════════════════════════
-async function shareSnapshot() {
-  const SIZE = 360, CELL = SIZE / 5, PAD = 2;
-  const canvas = document.createElement('canvas');
-  const totalSize = SIZE + 80; // extra for header/footer
-  canvas.width = totalSize;
-  canvas.height = totalSize;
-  const ctx = canvas.getContext('2d');
-
-  // Background
-  ctx.fillStyle = '#1a1612';
-  ctx.fillRect(0, 0, totalSize, totalSize);
-
-  // Title
-  ctx.fillStyle = '#c8a84b';
-  ctx.font = 'bold 14px serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('Tic-Tac-Shuffle', totalSize / 2, 22);
-
-  // Board
-  const boardOffX = 40, boardOffY = 34;
-  const dark = '#413931', light = '#ffd5b4', gridCol = '#ffe6d5';
-
-  // Grid background
-  ctx.fillStyle = gridCol;
-  ctx.fillRect(boardOffX - PAD, boardOffY - PAD, SIZE + PAD * 2, SIZE + PAD * 2);
-
-  // Draw cells
-  for (let r = 0; r < 5; r++) {
-    for (let c = 0; c < 5; c++) {
-      const x = boardOffX + c * CELL + PAD;
-      const y = boardOffY + (4 - r) * CELL + PAD; // flip: row 0 at bottom
-      const w = CELL - PAD;
-      ctx.fillStyle = (c + r) % 2 === 0 ? dark : light;
-      ctx.fillRect(x, y, w, w);
-
-      // Piece
-      const piece = G.board[K(c, r)];
-      if (piece) {
-        ctx.font = `${Math.floor(CELL * 0.62)}px serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillStyle = piece.color === 'white' ? '#fff5e8' : '#1a1520';
-        // Shadow
-        ctx.shadowColor = 'rgba(0,0,0,0.7)';
-        ctx.shadowBlur = 4;
-        ctx.fillText(SYM[piece.color][piece.type], x + w / 2, y + w / 2);
-        ctx.shadowBlur = 0;
-      }
-    }
-  }
-
-  // Border around board
-  ctx.strokeStyle = '#413931';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(boardOffX - PAD, boardOffY - PAD, SIZE + PAD * 2, SIZE + PAD * 2);
-
-  // Result line
-  const resultY = boardOffY + SIZE + PAD * 2 + 20;
-  const diffLabel = t('diff' + G.difficulty.charAt(0).toUpperCase() + G.difficulty.slice(1));
-  let resultText = '';
-  if (G.winner === G.playerColor) resultText = `✦ ${t('victory')} · ${diffLabel}`;
-  else if (G.winner === 'draw' || G.winner === 'repetition') resultText = `${t('drawTitle')} · ${diffLabel}`;
-  else resultText = `${t('defeated')} · ${diffLabel}`;
-
-  ctx.fillStyle = '#c8a84b';
-  ctx.font = '13px serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'alphabetic';
-  ctx.fillText(resultText, totalSize / 2, resultY);
-
-  // Move count
-  ctx.fillStyle = '#7a6a5a';
-  ctx.font = '11px serif';
-  ctx.fillText(`${G.moveCount} ${lang === 'sr' ? 'poteza' : 'moves'}`, totalSize / 2, resultY + 16);
-
-  // Convert to blob and share
-  canvas.toBlob(async blob => {
-    const file = new File([blob], 'tic-tac-shuffle.png', { type: 'image/png' });
-    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-      try {
-        await navigator.share({ files: [file], title: 'Tic-Tac-Shuffle', text: resultText });
-      } catch(e) { /* dismissed */ }
-    } else {
-      // Fallback: download image
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'tic-tac-shuffle.png';
-      a.click();
-    }
-  }, 'image/png');
-}
-
 async function shareGame() {
   const url = 'https://pedja-69.github.io/tic-tac-shuffle/';
   const text = t('shareGameText') + '\n' + url;
