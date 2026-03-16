@@ -683,6 +683,8 @@ header h1 {
   font-size: 0.78rem;
 }
 .hist-row:last-child { border-bottom: none; }
+.hist-row-clickable { cursor: pointer; }
+.hist-row-clickable:hover { background: var(--surface2); }
 .hist-num { color: var(--muted); font-size: 0.68rem; text-align: right; }
 .hist-result {
   font-weight: 600;
@@ -981,6 +983,13 @@ header h1 {
   letter-spacing:0.1em;padding:5px 10px;cursor:pointer;transition:all 0.12s;
 " onmouseover="this.style.borderColor='var(--gold-dim)';this.style.color='var(--gold)'"
    onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--muted)'">SR</button>
+<div style="position:fixed;top:46px;right:14px;z-index:50;display:flex;flex-direction:column;align-items:center;gap:5px">
+  <div style="text-align:center;color:var(--muted);font-size:0.55rem;letter-spacing:0.05em;font-family:'Cinzel',serif">v1.1</div>
+  <button onclick="openChangelog()" style="background:var(--surface);border:1px solid var(--border2);border-radius:2px;color:var(--muted);font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.08em;padding:3px 7px;cursor:pointer;transition:all 0.12s"
+    onmouseover="this.style.borderColor='var(--gold-dim)';this.style.color='var(--gold)'"
+    onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--muted)'"
+    data-i18n="changelog">WHAT'S NEW</button>
+</div>
 
 <!-- SETUP -->
 <div id="setup" class="setup-screen">
@@ -1075,7 +1084,27 @@ header h1 {
   </div>
 </div>
 
-<!-- GAME -->
+<!-- MOVE LOG MODAL -->
+<div id="moveLogModal" class="history-overlay hidden" onclick="if(event.target===this)closeMoveLog()">
+  <div class="history-box" style="max-width:320px">
+    <div class="history-header">
+      <div class="history-title" id="moveLogTitle">Move Log</div>
+      <button class="history-close" onclick="closeMoveLog()" data-i18n="close">Close</button>
+    </div>
+    <div id="moveLogContent" style="overflow-y:auto;max-height:60vh;padding:8px 4px"></div>
+  </div>
+</div>
+
+<!-- CHANGELOG MODAL -->
+<div id="changelogModal" class="history-overlay hidden" onclick="if(event.target===this)closeChangelog()">
+  <div class="history-box" style="max-width:340px">
+    <div class="history-header">
+      <div class="history-title" data-i18n="changelogTitle">What's New</div>
+      <button class="history-close" onclick="closeChangelog()" data-i18n="close">Close</button>
+    </div>
+    <div id="changelogContent" style="overflow-y:auto;max-height:65vh;padding:4px 2px"></div>
+  </div>
+</div>
 <div id="game" class="game-wrap hidden">
 
   <div class="board-col">
@@ -1332,6 +1361,8 @@ const TR = {
     shareGameTitle: 'Tic-Tac-Shuffle',
     shareGameText: 'Play Tic-Tac-Shuffle — a knife fight in a phone booth!',
     shareNotSupported: 'Copied link to clipboard.',
+    changelog: "WHAT'S NEW",
+    changelogTitle: "What's New",
     analysisBadge: '🔍 Analysis',
     analysisDesc: 'Analysis mode — moves not recorded.',
     // Status messages
@@ -1444,6 +1475,8 @@ const TR = {
     shareGameTitle: 'Tic-Tac-Shuffle',
     shareGameText: 'Igraj Tic-Tac-Shuffle — tuča noževima u telefonskoj govornici!',
     shareNotSupported: 'Kopirano u clipboard.',
+    changelog: 'NOVOSTI',
+    changelogTitle: 'Novosti',
     analysisBadge: '🔍 Analiza',
     analysisDesc: 'Režim analize — potezi se ne beleže.',
     yourTurn: 'Tvoj potez', aiTurn: 'Potez veštačke inteligencije',
@@ -1611,6 +1644,7 @@ function initGame(playerColor, difficulty, mode, openingRule) {
     winner: null,
     winLine: null,
     log: [],
+    moveHistory: [],  // [{color, type, text, cls}] structured move log
     moveCount: 0,
     positionHistory: {},  // stateKey -> count (threefold repetition)
     undoStack: [],        // stack of snapshots (multi-level undo)
@@ -2090,13 +2124,18 @@ function renderStatus() {
   else sub.textContent=t('moving', G.selected.type, FILES[G.selected.c]+(G.selected.r+1));
 }
 
-function addLog(text, cls) {
+function addLog(text, cls, type) {
   const el=document.getElementById('logBox');
   const div=document.createElement('div');
   div.className='log-entry '+(cls||'');
   div.textContent=text;
   el.appendChild(div);
   el.scrollTop=el.scrollHeight;
+  // structured move history (type is piece type, optional)
+  if(G && !G.analysis) {
+    const color = cls==='log-w' ? 'white' : cls==='log-b' ? 'black' : null;
+    G.moveHistory.push({color, type: type||null, text, cls: cls||''});
+  }
 }
 
 // ═══════════════════════════════════════════════════
@@ -2131,7 +2170,7 @@ function onCell(c, r) {
     const sq = FILES[c]+(r+1);
     doPlace(G.selected.type, c, r);
     G.opening=false;
-    addLog(t('places', t('white'), lastPlaced, sq), 'log-w');
+    addLog(t('places', t('white'), lastPlaced, sq), 'log-w', lastPlaced);
     G.selected=null;
     endTurn();
     return;
@@ -2157,7 +2196,7 @@ function onCell(c, r) {
       const pieceType=G.selected.type;
       saveSnapshot();
       doPlace(pieceType,c,r);
-      addLog(t('places', t(G.playerColor), pieceType, FILES[c]+(r+1)), G.playerColor==='white'?'log-w':'log-b');
+      addLog(t('places', t(G.playerColor), pieceType, FILES[c]+(r+1)), G.playerColor==='white'?'log-w':'log-b', pieceType);
       G.selected=null;
       endTurn();
     } else if(existing&&existing.color===G.playerColor) {
@@ -2173,7 +2212,7 @@ function onCell(c, r) {
       const pieceType=G.selected.type, fc=G.selected.c, fr=G.selected.r;
       saveSnapshot();
       doMove(fc,fr,c,r);
-      addLog(t('movesLog', t(G.playerColor), pieceType, FILES[fc]+(fr+1), FILES[c]+(r+1)), G.playerColor==='white'?'log-w':'log-b');
+      addLog(t('movesLog', t(G.playerColor), pieceType, FILES[fc]+(fr+1), FILES[c]+(r+1)), G.playerColor==='white'?'log-w':'log-b', pieceType);
       G.selected=null;
       endTurn();
     } else if(existing&&existing.color===G.playerColor) {
@@ -2196,7 +2235,8 @@ function saveSnapshot() {
     openingRule: G.openingRule,
     moveCount: G.moveCount,
     positionHistory: {...G.positionHistory},
-    log: [...G.log]
+    log: [...G.log],
+    moveHistory: G.moveHistory.map(m=>({...m}))
   };
   G.undoStack.push(snap);
   if(G.undoStack.length > 5) G.undoStack.shift(); // cap at 5
@@ -2274,7 +2314,7 @@ function doAI() {
     const i=G.reserve[G.aiColor].indexOf(type); if(i>=0) G.reserve[G.aiColor].splice(i,1);
     G.opening=false;
     const sq=FILES[oc]+(or+1);
-    addLog(t('aiPlaces', type, sq), G.aiColor==='white'?'log-w':'log-b');
+    addLog(t('aiPlaces', type, sq), G.aiColor==='white'?'log-w':'log-b', type);
     endTurn(); return;
   }
 
@@ -2292,10 +2332,10 @@ function doAI() {
   if(act.kind==='place') {
     G.board[K(act.c,act.r)]={color:G.aiColor,type:act.type};
     const i=G.reserve[G.aiColor].indexOf(act.type); if(i>=0) G.reserve[G.aiColor].splice(i,1);
-    addLog(t('aiPlaces', act.type, FILES[act.c]+(act.r+1)), G.aiColor==='white'?'log-w':'log-b');
+    addLog(t('aiPlaces', act.type, FILES[act.c]+(act.r+1)), G.aiColor==='white'?'log-w':'log-b', act.type);
   } else {
     const piece=G.board[K(act.fc,act.fr)]; delete G.board[K(act.fc,act.fr)]; G.board[K(act.c,act.r)]=piece;
-    addLog(t('aiMoves', act.type, FILES[act.fc]+(act.fr+1), FILES[act.c]+(act.r+1)), G.aiColor==='white'?'log-w':'log-b');
+    addLog(t('aiMoves', act.type, FILES[act.fc]+(act.fr+1), FILES[act.c]+(act.r+1)), G.aiColor==='white'?'log-w':'log-b', act.type);
   }
 
   endTurn();
@@ -2359,6 +2399,7 @@ function doUndo() {
   G.openingRule = s.openingRule;
   G.moveCount = s.moveCount;
   G.positionHistory = s.positionHistory;
+  G.moveHistory = s.moveHistory ? s.moveHistory.map(m=>({...m})) : [];
   G.selected = null;
   G.hintAction = null;
   G.gameOver = false;
@@ -2466,6 +2507,98 @@ function closeRulebook() {
 // ═══════════════════════════════════════════════════
 //  SHARE
 // ═══════════════════════════════════════════════════
+async function shareSnapshot() {
+  const SIZE = 360, CELL = SIZE / 5, PAD = 2;
+  const canvas = document.createElement('canvas');
+  const totalSize = SIZE + 80; // extra for header/footer
+  canvas.width = totalSize;
+  canvas.height = totalSize;
+  const ctx = canvas.getContext('2d');
+
+  // Background
+  ctx.fillStyle = '#1a1612';
+  ctx.fillRect(0, 0, totalSize, totalSize);
+
+  // Title
+  ctx.fillStyle = '#c8a84b';
+  ctx.font = 'bold 14px serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Tic-Tac-Shuffle', totalSize / 2, 22);
+
+  // Board
+  const boardOffX = 40, boardOffY = 34;
+  const dark = '#413931', light = '#ffd5b4', gridCol = '#ffe6d5';
+
+  // Grid background
+  ctx.fillStyle = gridCol;
+  ctx.fillRect(boardOffX - PAD, boardOffY - PAD, SIZE + PAD * 2, SIZE + PAD * 2);
+
+  // Draw cells
+  for (let r = 0; r < 5; r++) {
+    for (let c = 0; c < 5; c++) {
+      const x = boardOffX + c * CELL + PAD;
+      const y = boardOffY + (4 - r) * CELL + PAD; // flip: row 0 at bottom
+      const w = CELL - PAD;
+      ctx.fillStyle = (c + r) % 2 === 0 ? dark : light;
+      ctx.fillRect(x, y, w, w);
+
+      // Piece
+      const piece = G.board[K(c, r)];
+      if (piece) {
+        ctx.font = `${Math.floor(CELL * 0.62)}px serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = piece.color === 'white' ? '#fff5e8' : '#1a1520';
+        // Shadow
+        ctx.shadowColor = 'rgba(0,0,0,0.7)';
+        ctx.shadowBlur = 4;
+        ctx.fillText(SYM[piece.color][piece.type], x + w / 2, y + w / 2);
+        ctx.shadowBlur = 0;
+      }
+    }
+  }
+
+  // Border around board
+  ctx.strokeStyle = '#413931';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(boardOffX - PAD, boardOffY - PAD, SIZE + PAD * 2, SIZE + PAD * 2);
+
+  // Result line
+  const resultY = boardOffY + SIZE + PAD * 2 + 20;
+  const diffLabel = t('diff' + G.difficulty.charAt(0).toUpperCase() + G.difficulty.slice(1));
+  let resultText = '';
+  if (G.winner === G.playerColor) resultText = `✦ ${t('victory')} · ${diffLabel}`;
+  else if (G.winner === 'draw' || G.winner === 'repetition') resultText = `${t('drawTitle')} · ${diffLabel}`;
+  else resultText = `${t('defeated')} · ${diffLabel}`;
+
+  ctx.fillStyle = '#c8a84b';
+  ctx.font = '13px serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText(resultText, totalSize / 2, resultY);
+
+  // Move count
+  ctx.fillStyle = '#7a6a5a';
+  ctx.font = '11px serif';
+  ctx.fillText(`${G.moveCount} ${lang === 'sr' ? 'poteza' : 'moves'}`, totalSize / 2, resultY + 16);
+
+  // Convert to blob and share
+  canvas.toBlob(async blob => {
+    const file = new File([blob], 'tic-tac-shuffle.png', { type: 'image/png' });
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: 'Tic-Tac-Shuffle', text: resultText });
+      } catch(e) { /* dismissed */ }
+    } else {
+      // Fallback: download image
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'tic-tac-shuffle.png';
+      a.click();
+    }
+  }, 'image/png');
+}
+
 async function shareGame() {
   const url = 'https://pedja-69.github.io/tic-tac-shuffle/';
   const text = t('shareGameText') + '\n' + url;
@@ -2515,13 +2648,14 @@ function saveScores(diff, arr) {
 }
 
 function recordGame(diff, result, playerColor, moveCount, unrated) {
-  if(unrated) return; // don't record unrated games
+  if(unrated) return;
   const arr = loadScores(diff);
   arr.push({
     result,
     color: playerColor,
     moves: moveCount,
-    date: new Date().toLocaleDateString('en-GB', {day:'2-digit', month:'short'})
+    date: new Date().toLocaleDateString('en-GB', {day:'2-digit', month:'short'}),
+    log: G.moveHistory.map(m=>({...m}))
   });
   saveScores(diff, arr);
 }
@@ -2649,15 +2783,17 @@ function openHistory(diff) {
   } else {
     listEl.innerHTML = [...arr].reverse().map((g, i) => {
       const num = arr.length - i;
+      const idx = arr.length - 1 - i; // original index in arr
       const resClass = g.result==='win'?'hist-win':g.result==='loss'?'hist-loss':'hist-draw';
       const resText = g.result==='win'?t('histVictory'):g.result==='loss'?t('histDefeat'):t('histDraw');
       const colorSym = g.color==='white'?'♔ White':'♚ Black';
-      return `<div class="hist-row">
+      const hasLog = g.log && g.log.length > 0;
+      return `<div class="hist-row${hasLog?' hist-row-clickable':''}" ${hasLog?`onclick="openMoveLog('${historyDiff}',${idx})"`:''}>
         <div class="hist-num">${num}</div>
         <div class="hist-result ${resClass}">${resText}</div>
         <div class="hist-color">${colorSym}</div>
         <div class="hist-moves">${g.moves} moves</div>
-        <div class="hist-date">${g.date}</div>
+        <div class="hist-date">${g.date}${hasLog?' 📋':''}</div>
       </div>`;
     }).join('');
   }
@@ -2680,9 +2816,126 @@ function clearHistoryConfirmed() {
 
 function closeHistory() {
   document.getElementById('historyOverlay').classList.add('hidden');
-  // Reset clear button state
   document.getElementById('clearBtn').style.display = 'block';
   document.getElementById('clearConfirmBtn').style.display = 'none';
+}
+
+function openMoveLog(diff, idx) {
+  const arr = loadScores(diff);
+  const game = arr[idx];
+  if(!game || !game.log || !game.log.length) return;
+
+  const resText = game.result==='win'?t('histVictory'):game.result==='loss'?t('histDefeat'):t('histDraw');
+  const diffLabel = t('diff'+diff.charAt(0).toUpperCase()+diff.slice(1));
+  document.getElementById('moveLogTitle').textContent = `${resText} · ${diffLabel} · ${game.moves} ${lang==='sr'?'poteza':'moves'}`;
+
+  const content = document.getElementById('moveLogContent');
+  content.innerHTML = '';
+
+  let moveNum = 0;
+  game.log.forEach((entry, i) => {
+    // Skip system messages
+    if(entry.cls === 'log-sys') {
+      const sysDiv = document.createElement('div');
+      sysDiv.style.cssText = 'text-align:center;color:var(--muted);font-size:0.7rem;padding:4px 0;font-style:italic';
+      sysDiv.textContent = entry.text;
+      content.appendChild(sysDiv);
+      return;
+    }
+
+    moveNum++;
+    const isWhite = entry.color === 'white';
+    const row = document.createElement('div');
+    row.style.cssText = `display:flex;align-items:center;gap:8px;padding:5px 4px;border-bottom:1px solid var(--border);`;
+
+    // Move number
+    const numEl = document.createElement('div');
+    numEl.style.cssText = 'min-width:22px;text-align:right;color:var(--muted);font-size:0.72rem';
+    numEl.textContent = moveNum + '.';
+    row.appendChild(numEl);
+
+    // Piece icon
+    const iconEl = document.createElement('div');
+    iconEl.style.cssText = 'width:22px;height:22px;flex-shrink:0';
+    if(entry.type && PIECE_SVG[entry.color]) {
+      iconEl.innerHTML = PIECE_SVG[entry.color][entry.type];
+    }
+    row.appendChild(iconEl);
+
+    // Move text
+    const textEl = document.createElement('div');
+    textEl.style.cssText = `font-size:0.78rem;color:${isWhite?'var(--text)':'var(--gold)'};flex:1`;
+    textEl.textContent = entry.text;
+    row.appendChild(textEl);
+
+    content.appendChild(row);
+  });
+
+  document.getElementById('moveLogModal').classList.remove('hidden');
+}
+
+function closeMoveLog() {
+  document.getElementById('moveLogModal').classList.add('hidden');
+}
+
+// ═══════════════════════════════════════════════════
+//  CHANGELOG
+// ═══════════════════════════════════════════════════
+const CHANGELOG = [
+  {
+    version: 'v1.1',
+    date: { en: 'Monday, 16 March 2026', sr: 'Ponedeljak, 16. mart 2026.' },
+    items: {
+      en: ['📋 Move log — tap any game in History to see the full move list with piece icons'],
+      sr: ['📋 Dnevnik poteza — tapnite bilo koju igru u Istoriji da vidite sve poteze sa ikonama figura']
+    }
+  },
+  {
+    version: 'v1.0',
+    date: { en: 'Tuesday, 10 March 2026', sr: 'Utorak, 10. mart 2026.' },
+    items: {
+      en: [
+        '🌐 Game launched at pedja-69.github.io/tic-tac-shuffle',
+        '🧠 AI no longer accepts draws when you\'re in zugzwang (all your moves hand it a win)'
+      ],
+      sr: [
+        '🌐 Igra objavljena na pedja-69.github.io/tic-tac-shuffle',
+        '🧠 AI više ne prihvata remi kada si u cugcvangu (svaki tvoj potez vodi do njegovog dobitka)'
+      ]
+    }
+  }
+];
+
+function openChangelog() {
+  const content = document.getElementById('changelogContent');
+  content.innerHTML = '';
+  CHANGELOG.forEach(entry => {
+    const block = document.createElement('div');
+    block.style.cssText = 'margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border)';
+
+    const header = document.createElement('div');
+    header.style.cssText = 'display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px';
+    header.innerHTML = `
+      <span style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--gold)">${entry.version}</span>
+      <span style="font-size:0.7rem;color:var(--muted)">${entry.date[lang]}</span>`;
+    block.appendChild(header);
+
+    const items = entry.items[lang];
+    items.forEach(item => {
+      const p = document.createElement('div');
+      p.style.cssText = 'font-size:0.78rem;color:var(--text);padding:3px 0 3px 8px;border-left:2px solid var(--border2);margin-bottom:4px;line-height:1.4';
+      p.textContent = item;
+      block.appendChild(p);
+    });
+
+    content.appendChild(block);
+  });
+
+  document.getElementById('changelogModal').classList.remove('hidden');
+}
+
+function closeChangelog() {
+  document.getElementById('changelogModal').classList.add('hidden');
 }
 
 // Close modal on backdrop click
