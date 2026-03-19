@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tic-Tac-Shuffle</title>
+<script src="https://unpkg.com/@instantdb/core@0.14.7/dist/index.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap');
 
@@ -2107,6 +2108,9 @@ function renderStatus() {
       gem.className=`turn-gem gem-${G.winner}`;
       name.textContent=(G.winner==='white'?t('white'):t('black'))+' — '+(G.winner===G.playerColor?t('victory'):t('defeated'));
       sub.textContent=G.winner===G.playerColor?t('victoryDesc'):t('defeatedDesc');
+      // --- PASTE THIS LINE HERE ---
+  if (typeof syncVictoryToCloud === 'function') syncVictoryToCloud();
+  // ----------------------------
     }
     return;
   }
@@ -3073,7 +3077,49 @@ function onAbandonLeave(e) {
   btn.style.borderColor = '';
   btn.style.color = '';
 }
+// --- INSTANT DB GLOBAL LEADERBOARD LOGIC ---
 
+// 1. Initialize the Global Database (Replace YOUR_APP_ID with your actual ID)
+const db = InstantDB.init({ appId: "9472496a-1981-4a67-aef4-452479972da2" });
+
+// 2. Global Leaderboard State
+let globalLeaderboard = [];
+
+// 3. Automatically listen for new world records
+db.subscribe({ scores: {} }, (result) => {
+  if (result.data) {
+    // Rank order for sorting
+    const rank = { epic: 5, hard: 4, medium: 3, easy: 2, child: 1 };
+    globalLeaderboard = result.data.scores.sort((a, b) => {
+      // Sort by difficulty first
+      if (rank[b.difficulty] !== rank[a.difficulty]) 
+        return rank[b.difficulty] - rank[a.difficulty];
+      // Then by fewest moves
+      return a.moves - b.moves;
+    });
+    console.log("Global Leaderboard Updated:", globalLeaderboard);
+  }
+});
+
+// 4. Function to send your victory to the clouds
+function syncVictoryToCloud() {
+  // Only sync if it's a Rated Win!
+  // In v37, we check G.mode, G.gameOver, and if G.winner is the player
+  if (G.mode !== 'rated' || !G.gameOver || G.winner !== playerSide) return;
+
+  const playerName = localStorage.getItem('player_name') || 'Anonymous Sultan';
+
+  db.transact(
+    db.tx.scores[InstantDB.id()].update({
+      username: playerName,
+      difficulty: G.difficulty,
+      side: playerSide,
+      moves: G.moveHistory ? G.moveHistory.length : 0, // Uses the actual move count from v37
+      timestamp: Date.now()
+    })
+  );
+  console.log("Victory archived in the Hall of Fame!");
+}
 // Attach hover listeners once DOM is ready
 document.getElementById('menuBtn').addEventListener('mouseenter', onAbandonHover);
 document.getElementById('menuBtn').addEventListener('mouseleave', onAbandonLeave);
