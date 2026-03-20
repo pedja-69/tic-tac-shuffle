@@ -762,10 +762,307 @@ h1 {
 }
 
 /* ══════════════════════════════════════════════
-   PLACEHOLDER SCREENS (Difficulty, Side Select…)
-   Each will be fleshed out in later steps.
-   They live here as stubs so the slide system works.
+   GAME SCREEN
 ══════════════════════════════════════════════ */
+#s-game {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* ── Top bar ── */
+.game-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: max(10px, env(safe-area-inset-top, 10px)) 12px 8px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  gap: 8px;
+}
+.game-topbar-btn {
+  background: transparent;
+  border: 1px solid var(--border2);
+  border-radius: 2px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+  font-family: 'Cinzel', serif;
+}
+.game-topbar-btn:hover { border-color: var(--gold-dim); color: var(--gold); }
+.game-badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  justify-content: center;
+}
+.game-diff-badge {
+  font-family: 'Cinzel', serif;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  border: 1px solid var(--gold-dim);
+  border-radius: 20px;
+  padding: 2px 8px;
+}
+.game-mode-badge {
+  font-family: 'Cinzel', serif;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 2px 8px;
+}
+.game-turn-indicator {
+  font-family: 'Cinzel', serif;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  color: var(--text);
+  flex-shrink: 0;
+  text-align: right;
+  min-width: 48px;
+}
+
+/* ── Board area ── */
+.game-board-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  min-height: 0; /* critical for flex shrink */
+}
+.game-board {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  gap: 2px;
+  background: #2a2018;
+  border: 2px solid #413931;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,230,213,0.15);
+  /* Square board that fits the available space */
+  width:  min(calc(100vw - 20px), calc(100vh - 220px));
+  height: min(calc(100vw - 20px), calc(100vh - 220px));
+  max-width: 380px;
+  max-height: 380px;
+}
+.game-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  user-select: none;
+  overflow: hidden;
+  transition: background 0.1s;
+}
+.game-cell.dark-sq  { background: #413931; }
+.game-cell.light-sq { background: #ffd5b4; }
+.game-cell.dark-sq:hover  { background: #5a4f47; }
+.game-cell.light-sq:hover { background: #f0c49a; }
+.game-cell.valid { box-shadow: inset 0 0 0 2px rgba(200,168,75,0.6); }
+.game-cell.valid:hover { background: rgba(200,168,75,0.22) !important; }
+.game-cell.selected-cell { box-shadow: inset 0 0 0 2px rgba(200,168,75,0.9); background: rgba(200,168,75,0.28) !important; }
+.game-cell.winning { animation: pulseGold 0.6s ease-in-out infinite alternate; }
+@keyframes pulseGold {
+  from { background: rgba(200,168,75,0.4); }
+  to   { background: rgba(200,168,75,0.75); box-shadow: inset 0 0 0 2px var(--gold); }
+}
+.game-cell .dot {
+  width: 28%;
+  height: 28%;
+  border-radius: 50%;
+  background: rgba(200,168,75,0.75);
+  box-shadow: 0 0 4px rgba(0,0,0,0.3);
+  pointer-events: none;
+}
+.game-piece {
+  width: 82%;
+  height: 82%;
+  pointer-events: none;
+  filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.55));
+  transition: transform 0.12s;
+}
+.game-cell.selected-cell .game-piece { transform: scale(1.1); }
+
+/* ── Reserve area ── */
+.game-reserve-wrap {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 0 4px;
+  min-height: 64px;
+  position: relative;
+}
+.game-reserve {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+.game-rp {
+  width: clamp(44px, 12vw, 58px);
+  height: clamp(44px, 12vw, 58px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+  padding: 4px;
+}
+.game-rp:hover:not(.used) { transform: scale(1.12); border-color: var(--gold); }
+.game-rp.sel-rp { border-color: var(--gold2); box-shadow: 0 0 0 2px var(--gold2); transform: scale(1.1); }
+.game-rp.used { opacity: 0.18; cursor: default; pointer-events: none; }
+.game-rp svg { width: 100%; height: 100%; display: block; }
+/* AI thinking pulse on reserve pieces */
+.game-reserve.thinking .game-rp {
+  animation: thinkPulse 1.2s ease-in-out infinite alternate;
+}
+@keyframes thinkPulse {
+  from { opacity: 0.4; filter: brightness(0.7); }
+  to   { opacity: 1;   filter: brightness(1.2); }
+}
+/* Stagger the pulse per piece */
+.game-reserve.thinking .game-rp:nth-child(1) { animation-delay: 0s; }
+.game-reserve.thinking .game-rp:nth-child(2) { animation-delay: 0.2s; }
+.game-reserve.thinking .game-rp:nth-child(3) { animation-delay: 0.4s; }
+
+/* Thinking dots (subtle, below reserve) */
+.game-thinking {
+  display: flex;
+  gap: 5px;
+  margin-top: 4px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.game-thinking.visible { opacity: 1; }
+.thinking-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--gold);
+  animation: thinkDot 1.2s infinite;
+}
+.thinking-dot:nth-child(2) { animation-delay: 0.2s; }
+.thinking-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes thinkDot {
+  0%,80%,100% { opacity: 0.15; transform: scale(0.8); }
+  40%          { opacity: 1;    transform: scale(1); }
+}
+
+/* ── Tool bar ── */
+.game-toolbar {
+  display: flex;
+  align-items: center;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+  padding-bottom: max(8px, env(safe-area-inset-bottom, 8px));
+}
+.game-tool-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--border);
+  color: var(--muted);
+  cursor: pointer;
+  padding: 10px 4px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  transition: all 0.15s;
+}
+.game-tool-btn:last-child { border-right: none; }
+.game-tool-btn:hover { color: var(--gold); background: rgba(200,168,75,0.05); }
+.game-tool-btn:disabled { opacity: 0.3; cursor: default; }
+.game-tool-btn:disabled:hover { color: var(--muted); background: transparent; }
+.gt-icon { font-size: 1.2rem; line-height: 1; display: block; }
+.gt-label {
+  font-size: 0.55rem;
+  font-family: 'Cinzel', serif;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: inherit;
+}
+
+/* ── More sheet ── */
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 300;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s ease;
+  backdrop-filter: blur(2px);
+}
+.sheet-backdrop.open {
+  opacity: 1;
+  pointer-events: all;
+}
+.more-sheet {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--border2);
+  border-radius: 10px 10px 0 0;
+  z-index: 301;
+  padding-bottom: max(20px, env(safe-area-inset-bottom, 20px));
+  transform: translateY(100%);
+  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.more-sheet.open {
+  transform: translateY(0%);
+}
+.sheet-handle {
+  width: 36px; height: 4px;
+  background: var(--border2);
+  border-radius: 2px;
+  margin: 10px auto 4px;
+}
+.sheet-items {
+  padding: 8px 0;
+}
+.sheet-item {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-family: 'Crimson Pro', serif;
+  font-size: 1rem;
+  padding: 14px 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: background 0.12s;
+  text-align: left;
+}
+.sheet-item:hover { background: rgba(200,168,75,0.06); }
+.sheet-item-icon { font-size: 1.2rem; flex-shrink: 0; width: 24px; text-align: center; }
+.sheet-item-label { font-size: 0.95rem; letter-spacing: 0.02em; }
+.sheet-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 24px;
+}
+.sheet-item-danger { color: #c06060; }
+.sheet-item-danger:hover { background: rgba(168,64,64,0.08); }
+
+/* ══════════════════════════════════════════════
+   PLACEHOLDER SCREENS
 .screen-placeholder {
   display: flex;
   flex-direction: column;
@@ -1089,13 +1386,89 @@ h1 {
 
 
   <!-- ══════════════════════════════
-       SCREEN 4: GAME (stub)
+       SCREEN 4: GAME
   ══════════════════════════════ -->
   <div class="screen" id="s-game">
-    <button class="back-btn" onclick="slideBack()">← Back</button>
-    <div class="screen-placeholder">
-      <div class="ph-title">⚔ Battle</div>
-      <div>Game board — coming next</div>
+
+    <!-- TOP BAR -->
+    <div class="game-topbar">
+      <button class="game-topbar-btn" onclick="goToMenu()">←</button>
+      <div class="game-badges">
+        <span class="game-diff-badge" id="gameDiffBadge">Peasant</span>
+        <span class="game-mode-badge" id="gameModeBadge">⚔ Rated</span>
+      </div>
+      <div class="game-turn-indicator" id="gameTurnIndicator">Your turn</div>
+    </div>
+
+    <!-- BOARD AREA -->
+    <div class="game-board-wrap">
+      <div class="game-board" id="gameBoard">
+        <!-- 25 cells injected by JS -->
+      </div>
+    </div>
+
+    <!-- RESERVE PIECES -->
+    <div class="game-reserve-wrap">
+      <div class="game-reserve" id="gameReserve">
+        <!-- pieces injected by JS -->
+      </div>
+      <div class="game-thinking" id="gameThinking">
+        <span class="thinking-dot"></span>
+        <span class="thinking-dot"></span>
+        <span class="thinking-dot"></span>
+      </div>
+    </div>
+
+    <!-- TOOL BAR -->
+    <div class="game-toolbar">
+      <button class="game-tool-btn" id="gtUndo" onclick="gameUndo()" title="Undo">
+        <span class="gt-icon">↩</span>
+        <span class="gt-label" data-en="Undo" data-sr="Vrati">Undo</span>
+      </button>
+      <button class="game-tool-btn" id="gtHint" onclick="gameHint()" title="Hint">
+        <span class="gt-icon">💡</span>
+        <span class="gt-label" data-en="Hint" data-sr="Pomoć">Hint</span>
+      </button>
+      <button class="game-tool-btn" id="gtDraw" onclick="gameDraw()" title="Draw">
+        <span class="gt-icon">🤝</span>
+        <span class="gt-label" data-en="Draw" data-sr="Remi">Draw</span>
+      </button>
+      <button class="game-tool-btn" id="gtMore" onclick="openMoreSheet()" title="More">
+        <span class="gt-icon">⋯</span>
+        <span class="gt-label" data-en="More" data-sr="Više">More</span>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════
+       MORE SHEET (slide-up)
+  ══════════════════════════════ -->
+  <div class="sheet-backdrop" id="sheetBackdrop" onclick="closeMoreSheet()"></div>
+  <div class="more-sheet" id="moreSheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-items">
+      <button class="sheet-item" onclick="sheetRules()">
+        <span class="sheet-item-icon">📖</span>
+        <span class="sheet-item-label" data-en="Rules" data-sr="Pravila">Rules</span>
+      </button>
+      <button class="sheet-item" onclick="sheetHistory()">
+        <span class="sheet-item-icon">📜</span>
+        <span class="sheet-item-label" data-en="History" data-sr="Istorija">History</span>
+      </button>
+      <button class="sheet-item" onclick="sheetNewGame()">
+        <span class="sheet-item-icon">⚔</span>
+        <span class="sheet-item-label" data-en="New Game" data-sr="Nova Igra">New Game</span>
+      </button>
+      <button class="sheet-item" onclick="sheetShare()">
+        <span class="sheet-item-icon">📤</span>
+        <span class="sheet-item-label" data-en="Share" data-sr="Podeli">Share</span>
+      </button>
+      <div class="sheet-divider"></div>
+      <button class="sheet-item sheet-item-danger" onclick="sheetMenu()">
+        <span class="sheet-item-icon">🏠</span>
+        <span class="sheet-item-label" data-en="Main Menu" data-sr="Glavni Meni">Main Menu</span>
+      </button>
     </div>
   </div>
 
@@ -1411,9 +1784,147 @@ applyLang();
 
 
 // ═══════════════════════════════════════════
+//  GAME SCREEN
+// ═══════════════════════════════════════════
+
+// White king SVG (from v37)
+const SVG_WHITE_KING = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="104.74102 157.51657 9.2983418 9.2983418" width="100%" height="100%"><g id="g1025" transform="matrix(0.69673883,0,0,0.69673883,-18.443262,-72.152213)" style="stroke-width:1.43525"><path style="fill:#000000;stroke-width:1.43525" d="m 180.06145,340.96926 c -0.44551,-0.16499 -0.8416,-0.71431 -0.84466,-1.1714 -0.002,-0.23425 0.14255,-0.61893 0.29499,-0.78738 0.094,-0.10382 0.0769,-0.13818 -0.24043,-0.48417 -0.65961,-0.71918 -1.03979,-1.57499 -1.11059,-2.49998 -0.12013,-1.56955 0.74915,-2.78792 2.23498,-3.13251 0.24055,-0.0558 0.58898,-0.092 0.7743,-0.0806 0.3109,0.0192 0.33422,0.011 0.30183,-0.10609 -0.0933,-0.33739 -0.10388,-0.60116 -0.0345,-0.85893 0.11427,-0.42436 0.28564,-0.62477 0.60795,-0.71098 0.20265,-0.0542 0.28007,-0.10722 0.28007,-0.19183 0,-0.23498 0.19896,-0.50148 0.46436,-0.62197 0.72416,-0.32879 1.69361,0.0348 1.69361,0.63514 0,0.0769 0.0415,0.13009 0.10148,0.13009 0.23079,0 0.54333,0.21528 0.66837,0.46038 0.13329,0.26126 0.17602,0.74856 0.096,1.09463 l -0.044,0.19041 0.33525,-0.0208 c 0.41813,-0.026 1.08987,0.12598 1.51979,0.34384 0.18004,0.0912 0.48086,0.31939 0.6685,0.50702 1.22268,1.22269 1.06994,3.37202 -0.34641,4.87432 -0.14836,0.15736 -0.26974,0.3048 -0.26974,0.32765 0,0.0228 0.0561,0.12035 0.12473,0.2167 0.33368,0.46861 0.30195,1.07127 -0.0793,1.50544 -0.41505,0.47271 -0.33225,0.46285 -3.85367,0.459 -2.24054,-0.002 -3.19947,-0.0248 -3.34295,-0.0779 z" id="path982"/><path style="fill:#f9f9f9;stroke-width:1.43525" d="m 186.6953,340.25834 c 0.52706,-0.4435 0.14894,-1.10901 -0.63011,-1.10901 h -0.2629 l 0.37194,-0.27426 c 1.20818,-0.89088 1.95357,-2.25001 1.83995,-3.35492 -0.0768,-0.747 -0.39247,-1.30239 -0.94993,-1.67134 -0.65966,-0.4366 -1.5305,-0.51584 -2.29255,-0.20861 l -0.36194,0.14593 -0.28053,-0.26154 c -0.25367,-0.2365 -0.28054,-0.28968 -0.28054,-0.55537 v -0.29382 h 0.37305 c 0.22267,0 0.39833,-0.032 0.43577,-0.0793 0.10145,-0.12833 0.13309,-0.4281 0.0695,-0.65846 l -0.0592,-0.21425 h -0.40957 -0.40957 v -0.40516 c 0,-0.4453 -0.0356,-0.48061 -0.4867,-0.48256 -0.36879,-0.002 -0.40188,0.0381 -0.40188,0.48195 v 0.40577 h -0.41 -0.41001 l -0.0736,0.24574 c -0.0563,0.18804 -0.0558,0.2998 0.002,0.47602 l 0.076,0.23028 h 0.40763 0.40763 v 0.28669 c 0,0.2563 -0.0298,0.31527 -0.28154,0.55644 l -0.28154,0.26976 -0.25847,-0.10977 c -0.74105,-0.31473 -1.51425,-0.2966 -2.20253,0.0516 -1.18437,0.59923 -1.49915,2.13566 -0.7382,3.60309 0.26538,0.51176 0.99734,1.29519 1.5091,1.61522 l 0.31735,0.19845 -0.30463,0.001 c -0.37512,10e-4 -0.64653,0.13485 -0.77328,0.37995 -0.14548,0.28133 -0.11781,0.43753 0.11952,0.67486 l 0.2158,0.2158 h 3.1115 3.1115 z" id="path981"/></g></svg>`;
+
+// Black king SVG (from v37)
+const SVG_BLACK_KING = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="104.7789 147.21823 9.2983418 9.2983418" width="100%" height="100%"><g id="g1034" transform="matrix(1.333687,0,0,1.333687,-61.045005,-135.77635)" style="stroke-width:0.749801"><path style="fill:#f9f9f9;stroke-width:0.749799" d="m 125.55313,218.07578 c -0.23274,-0.0862 -0.43967,-0.37317 -0.44127,-0.61196 -10e-4,-0.12237 0.0745,-0.32333 0.15411,-0.41134 0.0491,-0.0542 0.0402,-0.0722 -0.1256,-0.25293 -0.34459,-0.37571 -0.54321,-0.8228 -0.58019,-1.30603 -0.0628,-0.81996 0.39136,-1.45645 1.16759,-1.63647 0.12566,-0.0291 0.30769,-0.0481 0.4045,-0.0421 0.16242,0.01 0.1746,0.006 0.15768,-0.0554 -0.0487,-0.17626 -0.0543,-0.31406 -0.018,-0.44872 0.0597,-0.22169 0.14922,-0.32639 0.3176,-0.37143 0.10587,-0.0283 0.14631,-0.056 0.14631,-0.10021 0,-0.12276 0.10394,-0.26199 0.24259,-0.32493 0.37832,-0.17177 0.88477,0.0182 0.88477,0.33181 0,0.0402 0.0217,0.068 0.053,0.068 0.12057,0 0.28384,0.11246 0.34916,0.24051 0.0696,0.13648 0.092,0.39106 0.0502,0.57185 l -0.023,0.0995 0.17514,-0.0109 c 0.21844,-0.0136 0.56936,0.0658 0.79396,0.17962 0.0941,0.0477 0.25121,0.16686 0.34924,0.26488 0.63874,0.63875 0.55895,1.76159 -0.18097,2.54642 -0.0775,0.0822 -0.14092,0.15923 -0.14092,0.17117 0,0.0119 0.0293,0.0629 0.0652,0.11321 0.17432,0.2448 0.15774,0.55964 -0.0414,0.78646 -0.21683,0.24695 -0.17357,0.2418 -2.01321,0.23979 -1.1705,-0.001 -1.67146,-0.013 -1.74641,-0.0407 z" id="path1029"/><path style="fill:#000000;fill-opacity:1;stroke-width:0.749799" d="m 129.01875,217.70439 c 0.27535,-0.2317 0.0778,-0.57937 -0.32918,-0.57937 h -0.13734 l 0.19431,-0.14328 c 0.63117,-0.46541 1.02057,-1.17544 0.96122,-1.75266 -0.0401,-0.39024 -0.20504,-0.68039 -0.49626,-0.87313 -0.34462,-0.22809 -0.79956,-0.26949 -1.19766,-0.10898 l -0.18909,0.0762 -0.14655,-0.13663 c -0.13252,-0.12355 -0.14656,-0.15133 -0.14656,-0.29013 v -0.1535 h 0.19489 c 0.11632,0 0.20809,-0.0167 0.22765,-0.0414 0.053,-0.067 0.0695,-0.22364 0.0363,-0.34399 l -0.0309,-0.11193 h -0.21396 -0.21397 v -0.21166 c 0,-0.23263 -0.0186,-0.25108 -0.25426,-0.25209 -0.19266,-10e-4 -0.20995,0.0199 -0.20995,0.25177 v 0.21198 h -0.21419 -0.21419 l -0.0384,0.12838 c -0.0294,0.0982 -0.0292,0.15662 10e-4,0.24868 l 0.0397,0.12031 h 0.21296 0.21295 v 0.14977 c 0,0.13389 -0.0156,0.1647 -0.14708,0.29069 l -0.14708,0.14093 -0.13503,-0.0573 c -0.38714,-0.16442 -0.79107,-0.15495 -1.15064,0.027 -0.61873,0.31304 -0.78318,1.1157 -0.38564,1.88231 0.13863,0.26735 0.52102,0.67663 0.78837,0.84381 l 0.16579,0.10368 -0.15914,5.2e-4 c -0.19597,5.2e-4 -0.33776,0.0704 -0.40398,0.19849 -0.076,0.14697 -0.0615,0.22857 0.0624,0.35256 l 0.11274,0.11274 h 1.6255 1.62549 z" id="path1030"/></g></svg>`;
+
+// White rook SVG (from v37)
+const SVG_WHITE_ROOK = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="114.78937 136.91989 9.2983418 9.2983418" width="100%" height="100%"><g id="g1021" transform="matrix(0.69673883,0,0,0.69673883,27.436302,-92.723938)" style="stroke-width:1.43525"><path style="fill:#000000;stroke-width:1.43525" d="m 128.94916,340.98281 c -0.65688,-0.26216 -1.00276,-1.03693 -0.74151,-1.66098 0.17522,-0.41854 0.76688,-0.8057 1.23303,-0.80684 l 0.14435,-3.6e-4 -0.0174,-1.06312 -0.0174,-1.06312 -0.45766,-0.0409 c -0.55748,-0.0498 -0.85784,-0.21701 -1.0435,-0.58092 -0.12684,-0.24864 -0.13214,-0.34565 -0.12178,-2.23078 0.0108,-1.96012 0.0117,-1.97226 0.16416,-2.23247 0.21234,-0.36234 0.50435,-0.49151 1.17642,-0.52039 0.67944,-0.0292 1.0369,0.0638 1.31519,0.34207 l 0.21538,0.21538 0.20256,-0.21477 c 0.26248,-0.27831 0.62047,-0.37218 1.30692,-0.34268 0.6511,0.028 0.92812,0.14619 1.15211,0.49163 l 0.16076,0.24794 0.11763,-0.21843 c 0.0647,-0.12013 0.21988,-0.28201 0.34484,-0.35973 0.20056,-0.12473 0.31282,-0.14131 0.95712,-0.14131 0.65131,0 0.75518,0.0157 0.96471,0.14601 0.12915,0.0803 0.30052,0.25167 0.38082,0.38082 0.14432,0.2321 0.14601,0.25794 0.14601,2.23875 v 2.00393 l -0.17427,0.26334 c -0.22472,0.33958 -0.48408,0.46913 -1.01529,0.50713 l -0.42892,0.0307 v 1.06326 1.06325 l 0.27737,0.0416 c 0.39603,0.0594 0.83127,0.35588 0.99578,0.67835 0.10886,0.21338 0.13145,0.34898 0.11117,0.66735 -0.0305,0.47856 -0.2442,0.79667 -0.68742,1.02311 -0.27897,0.14253 -0.28554,0.1428 -3.39195,0.13878 -1.88672,-0.002 -3.17419,-0.0287 -3.26922,-0.0666 z" id="path972"/><path style="fill:#f9f9f9;stroke-width:1.43525" d="m 135.48954,340.2332 c 0.33326,-0.33326 0.21283,-0.85316 -0.23726,-1.02429 -0.0862,-0.0328 -0.29604,-0.0596 -0.46633,-0.0596 -0.50413,0 -0.50722,-0.0113 -0.50722,-1.85475 v -1.57262 h 0.63958 c 0.62504,0 0.64388,-0.004 0.82869,-0.18911 l 0.18911,-0.18911 -0.0195,-1.83976 c -0.0232,-2.19718 0.031,-2.05543 -0.79918,-2.08783 -0.48992,-0.0191 -0.57316,-0.006 -0.72771,0.11568 -0.16982,0.13358 -0.17454,0.15463 -0.17538,0.78323 -0.001,0.96877 0.0228,0.93157 -0.60271,0.93157 -0.42045,0 -0.53299,-0.02 -0.56382,-0.10039 -0.0212,-0.0552 -0.0385,-0.41017 -0.0385,-0.78877 0,-0.66806 -0.005,-0.69225 -0.16723,-0.81992 -0.1345,-0.10579 -0.25794,-0.13154 -0.63057,-0.13154 -0.25483,0 -0.5338,0.0268 -0.61992,0.0595 -0.21285,0.0809 -0.30607,0.39667 -0.29558,1.00109 0.0152,0.87486 0.0709,0.78803 -0.49228,0.7668 l -0.49189,-0.0185 -0.036,-0.72991 c -0.0198,-0.40144 -0.0588,-0.78068 -0.0868,-0.84273 -0.0825,-0.18313 -0.2531,-0.23625 -0.75865,-0.23625 -0.4847,0 -0.76807,0.0777 -0.8251,0.22636 -0.0174,0.0452 -0.037,0.91499 -0.0438,1.9328 -0.0149,2.26619 -0.0837,2.10895 0.94252,2.15679 l 0.68083,0.0317 v 1.56432 c 0,1.44929 -0.009,1.57414 -0.12091,1.69782 -0.0915,0.10103 -0.19646,0.1335 -0.43157,0.1335 -0.7572,0 -1.14388,0.61052 -0.6803,1.07411 l 0.19529,0.19529 h 3.07829 3.07829 z" id="path971"/></g></svg>`;
+
+// White bishop SVG (from v37)
+const SVG_WHITE_BISHOP = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="114.78936 147.21822 9.2983418 9.2983418" width="100%" height="100%"><g id="g1035" transform="matrix(1.333687,0,0,1.333687,-41.465276,-126.01066)" style="stroke-width:0.749801"><path style="fill:#000000;stroke-width:0.749799" d="m 118.74025,210.30639 c -0.13305,-0.0763 -0.18937,-0.13581 -0.25697,-0.27146 -0.0476,-0.0956 -0.0862,-0.22675 -0.0858,-0.29156 0.002,-0.25367 0.236,-0.56523 0.46277,-0.61504 0.057,-0.0125 0.0985,-0.0326 0.0921,-0.0446 -0.32092,-0.60258 -0.33188,-1.02377 -0.042,-1.61341 0.15407,-0.31339 0.32714,-0.56074 0.59663,-0.85271 0.0889,-0.0964 0.19749,-0.21452 0.24124,-0.2626 l 0.0795,-0.0874 -0.0766,-0.14469 c -0.10676,-0.20158 -0.10943,-0.61343 -0.005,-0.8096 0.10094,-0.19007 0.26357,-0.3415 0.46999,-0.43763 0.23963,-0.11161 0.58459,-0.0964 0.80995,0.0356 0.41952,0.24584 0.59326,0.78768 0.3833,1.19534 l -0.0832,0.16161 0.22786,0.23335 c 0.4022,0.41189 0.679,0.8282 0.80315,1.20792 0.0311,0.0951 0.0533,0.19955 0.0492,0.2321 -0.004,0.0325 0.008,0.0964 0.0263,0.14178 0.0317,0.078 0.0126,0.21339 -0.0426,0.30276 -0.0145,0.0235 -0.0102,0.0306 0.0108,0.0177 0.0641,-0.0396 0.006,0.25105 -0.0945,0.4711 -0.11105,0.24368 -0.10948,0.23667 -0.0529,0.23667 0.0238,0 0.11249,0.0439 0.19712,0.0976 0.33055,0.20963 0.39937,0.643 0.15014,0.94537 -0.20921,0.25381 -0.16745,0.24869 -2.03181,0.24916 l -1.65788,4.1e-4 z" id="path978"/><path style="fill:#f9f9f9;stroke-width:0.749799" d="m 122.27228,210.0191 c 0.0425,-0.0297 0.0982,-0.10434 0.12387,-0.16579 0.0399,-0.0956 0.04,-0.12765 5.3e-4,-0.22206 -0.0698,-0.16707 -0.21651,-0.22124 -0.59925,-0.22124 H 121.478 l 0.15294,-0.15749 c 0.55603,-0.57265 0.62688,-1.04477 0.26469,-1.76398 l -0.12273,-0.2437 -0.48616,0.48412 c -0.26739,0.26627 -0.52719,0.49941 -0.57734,0.51809 -0.10717,0.0399 -0.23779,5.2e-4 -0.26903,-0.0806 -0.0639,-0.16661 -0.0292,-0.21908 0.49284,-0.74483 0.28267,-0.28467 0.51395,-0.53507 0.51395,-0.55643 0,-0.0214 -0.13945,-0.16126 -0.30989,-0.31087 l -0.30988,-0.27202 0.14086,-0.13546 c 0.45017,-0.43294 0.0874,-1.11603 -0.53101,-1.00001 -0.0654,0.0123 -0.17299,0.0698 -0.23914,0.1279 -0.28587,0.251 -0.28139,0.64105 0.0101,0.88229 l 0.12815,0.10605 -0.39914,0.40467 c -1.05711,1.07178 -1.17011,1.74611 -0.43045,2.56878 l 0.15601,0.17351 h -0.32975 c -0.28838,0 -0.34382,0.01 -0.44197,0.0756 -0.1952,0.13155 -0.21253,0.34813 -0.0406,0.50746 l 0.0864,0.0801 h 1.62909 c 1.45243,0 1.63745,-0.006 1.70627,-0.0541 z" id="path977"/></g></svg>`;
+
+// Black rook SVG (from v37)
+const SVG_BLACK_ROOK = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="124.83771 136.91989 9.2983418 9.2983418" width="100%" height="100%"><g id="g1032" transform="matrix(1.333687,0,0,1.333687,-40.450031,-124.75369)" style="stroke-width:0.749801"><path style="fill:#f9f9f9;stroke-width:0.749799" d="m 125.63901,202.29567 c -0.34317,-0.13696 -0.52386,-0.54171 -0.38738,-0.86773 0.0915,-0.21865 0.40063,-0.42091 0.64416,-0.4215 l 0.0754,-1.9e-4 -0.009,-0.55539 -0.009,-0.55539 -0.23909,-0.0214 c -0.29124,-0.026 -0.44815,-0.11337 -0.54514,-0.30348 -0.0663,-0.12989 -0.069,-0.18057 -0.0636,-1.16539 0.006,-1.024 0.006,-1.03034 0.0858,-1.16628 0.11093,-0.18929 0.26348,-0.25677 0.61458,-0.27186 0.35495,-0.0153 0.54169,0.0333 0.68707,0.1787 l 0.11252,0.11252 0.10582,-0.1122 c 0.13712,-0.14539 0.32414,-0.19443 0.68276,-0.17902 0.34014,0.0146 0.48486,0.0764 0.60188,0.25683 l 0.084,0.12953 0.0615,-0.11411 c 0.0338,-0.0628 0.11487,-0.14733 0.18015,-0.18793 0.10478,-0.0652 0.16342,-0.0738 0.50002,-0.0738 0.34025,0 0.39451,0.008 0.50397,0.0763 0.0675,0.042 0.157,0.13147 0.19895,0.19894 0.0754,0.12126 0.0763,0.13476 0.0763,1.16956 v 1.04689 l -0.091,0.13757 c -0.1174,0.1774 -0.25289,0.24508 -0.53041,0.26493 l -0.22407,0.016 v 0.55546 0.55546 l 0.1449,0.0217 c 0.20689,0.031 0.43427,0.18592 0.52021,0.35438 0.0569,0.11148 0.0687,0.18232 0.0581,0.34864 -0.0159,0.25001 -0.12757,0.41619 -0.35912,0.53449 -0.14574,0.0745 -0.14917,0.0746 -1.77201,0.0725 -0.98565,-0.001 -1.65824,-0.015 -1.70789,-0.0348 z" id="path1031"/><path style="fill:#000000;fill-opacity:1;stroke-width:0.749799" d="m 129.0558,201.90406 c 0.1741,-0.1741 0.11119,-0.44571 -0.12394,-0.53511 -0.045,-0.0171 -0.15466,-0.0311 -0.24362,-0.0311 -0.26337,0 -0.26498,-0.006 -0.26498,-0.96895 v -0.82157 h 0.33412 c 0.32653,0 0.33638,-0.002 0.43292,-0.0988 l 0.0988,-0.0988 -0.0102,-0.96112 c -0.0121,-1.14784 0.0162,-1.07379 -0.4175,-1.09072 -0.25594,-0.01 -0.29943,-0.003 -0.38017,0.0604 -0.0887,0.0698 -0.0912,0.0808 -0.0916,0.40917 -5.2e-4,0.5061 0.0119,0.48666 -0.31487,0.48666 -0.21965,0 -0.27844,-0.0104 -0.29454,-0.0524 -0.0111,-0.0288 -0.0201,-0.21428 -0.0201,-0.41207 0,-0.349 -0.003,-0.36164 -0.0874,-0.42834 -0.0703,-0.0553 -0.13475,-0.0687 -0.32942,-0.0687 -0.13313,0 -0.27887,0.014 -0.32386,0.0311 -0.11119,0.0423 -0.15989,0.20723 -0.15441,0.52298 0.008,0.45704 0.037,0.41168 -0.25718,0.40059 l -0.25697,-0.01 -0.0188,-0.38132 c -0.0104,-0.20972 -0.0307,-0.40784 -0.0453,-0.44025 -0.0431,-0.0957 -0.13222,-0.12342 -0.39633,-0.12342 -0.25322,0 -0.40125,0.0406 -0.43105,0.11825 -0.009,0.0236 -0.0193,0.478 -0.0229,1.00972 -0.008,1.1839 -0.0437,1.10175 0.49239,1.12674 l 0.35568,0.0166 v 0.81722 c 0,0.75713 -0.005,0.82236 -0.0632,0.88697 -0.0478,0.0528 -0.10263,0.0697 -0.22546,0.0697 -0.39557,0 -0.59758,0.31895 -0.3554,0.56113 l 0.10202,0.10203 h 1.60815 1.60815 z" id="path1032"/></g></svg>`;
+
+// Black bishop SVG (from v37)
+const SVG_BLACK_BISHOP = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="124.79982 147.21823 9.2983418 9.2983418" width="100%" height="100%"><g id="g1033" transform="matrix(1.333687,0,0,1.333687,-40.353341,-124.89872)" style="stroke-width:0.749801"><path style="fill:#f9f9f9;stroke-width:0.749799" d="m 125.31945,210.30639 c -0.13306,-0.0763 -0.18937,-0.13581 -0.25698,-0.27146 -0.0476,-0.0956 -0.0862,-0.22675 -0.0858,-0.29156 0.002,-0.25367 0.236,-0.56523 0.46277,-0.61504 0.057,-0.0125 0.0985,-0.0326 0.0921,-0.0446 -0.32092,-0.60258 -0.33188,-1.02377 -0.042,-1.61341 0.15407,-0.31339 0.32714,-0.56074 0.59664,-0.85271 0.0889,-0.0964 0.19748,-0.21452 0.24123,-0.2626 l 0.0795,-0.0874 -0.0766,-0.14469 c -0.10676,-0.20158 -0.10943,-0.61343 -0.005,-0.8096 0.10095,-0.19007 0.26357,-0.3415 0.46999,-0.43763 0.23963,-0.11161 0.58459,-0.0964 0.80995,0.0356 0.41952,0.24584 0.59326,0.78768 0.3833,1.19534 l -0.0832,0.16161 0.22786,0.23335 c 0.4022,0.41189 0.67901,0.8282 0.80315,1.20792 0.0311,0.0951 0.0533,0.19955 0.0492,0.2321 -0.004,0.0325 0.008,0.0964 0.0263,0.14178 0.0317,0.078 0.0126,0.21339 -0.0426,0.30276 -0.0145,0.0235 -0.0102,0.0306 0.0108,0.0177 0.0641,-0.0396 0.006,0.25105 -0.0945,0.4711 -0.11106,0.24368 -0.10949,0.23667 -0.0529,0.23667 0.0238,0 0.11248,0.0439 0.19711,0.0976 0.33055,0.20963 0.39937,0.643 0.15014,0.94537 -0.20921,0.25381 -0.16744,0.24869 -2.0318,0.24916 l -1.65788,4.1e-4 z" id="path1028"/><g id="g1027" transform="matrix(0.52241557,0,0,0.52241557,44.772698,39.576686)" style="stroke-width:1.43525"><path style="fill:#000000;stroke-width:1.43525" d="m 154.47923,326.42489 c -0.50251,-0.21846 -0.59481,-0.8433 -0.18064,-1.22286 0.21714,-0.199 0.24431,-0.20632 0.76556,-0.20632 0.29723,0 0.54042,-0.0168 0.54042,-0.0374 0,-0.0205 -0.12952,-0.18478 -0.28782,-0.36495 -0.34848,-0.39662 -0.57547,-0.84154 -0.67749,-1.3279 -0.20816,-0.99243 0.39201,-2.20929 1.76584,-3.58026 l 0.58318,-0.58196 -0.16073,-0.14794 c -0.59724,-0.5497 -0.49411,-1.55569 0.20377,-1.98782 1.10872,-0.68652 2.38875,0.56901 1.72859,1.69549 -0.0961,0.16398 -0.22414,0.32661 -0.28456,0.36141 -0.0947,0.0546 -0.0328,0.1371 0.45047,0.60036 0.47355,0.45391 0.55036,0.55506 0.49602,0.65322 -0.0354,0.0639 -0.49458,0.54421 -1.02047,1.0674 -0.61868,0.6155 -0.95617,0.99766 -0.95617,1.08272 0,0.21743 0.15357,0.3673 0.37636,0.3673 0.17829,0 0.32578,-0.12167 1.17335,-0.96791 1.11138,-1.10964 1.01577,-1.08888 1.40989,-0.30625 0.57861,1.14897 0.47166,2.09218 -0.34901,3.07776 l -0.3303,0.39669 0.52594,2.4e-4 c 0.41551,1.9e-4 0.57005,0.0271 0.73603,0.12833 0.51088,0.31147 0.46583,1.03474 -0.0806,1.29403 -0.18466,0.0876 -0.60153,0.10036 -3.21737,0.0982 -2.43649,-0.002 -3.04403,-0.0193 -3.21026,-0.0916 z" id="path1002"/></g></g></svg>`;
+
+const PIECE_SVGS = {
+  white: { king: SVG_WHITE_KING, rook: SVG_WHITE_ROOK, bishop: SVG_WHITE_BISHOP },
+  black: { king: SVG_BLACK_KING, rook: SVG_BLACK_ROOK, bishop: SVG_BLACK_BISHOP },
+};
+
+const DIFF_DISPLAY = {
+  peasant:  { en: 'Peasant',  sr: 'Seljak' },
+  squire:   { en: 'Squire',   sr: 'Štitonoša' },
+  knight:   { en: 'Knight',   sr: 'Vitez' },
+  warlord:  { en: 'Warlord',  sr: 'Ratni Gospodar' },
+  lichking: { en: 'Lich King',sr: 'Kralj Ličeva' },
+};
+
+// Maps new difficulty names to v37's internal difficulty keys
+const DIFF_MAP = {
+  peasant: 'child', squire: 'easy', knight: 'medium',
+  warlord: 'hard',  lichking: 'epic'
+};
+
+function initGameScreen() {
+  const cfg = window.gameConfig || { diff: 'peasant', side: 'white' };
+
+  // Update badges
+  const diffLabel = DIFF_DISPLAY[cfg.diff]?.[lang] || cfg.diff;
+  document.getElementById('gameDiffBadge').textContent = diffLabel;
+
+  // Build the 5×5 board
+  const board = document.getElementById('gameBoard');
+  board.innerHTML = '';
+  for (let r = 4; r >= 0; r--) {
+    for (let c = 0; c < 5; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'game-cell ' + ((r + c) % 2 === 0 ? 'light-sq' : 'dark-sq');
+      cell.dataset.r = r;
+      cell.dataset.c = c;
+      board.appendChild(cell);
+    }
+  }
+
+  // Force board to be square based on actual available space
+  const wrap = document.querySelector('.game-board-wrap');
+  if (wrap) {
+    const wrapW = wrap.clientWidth  - 20;
+    const wrapH = wrap.clientHeight - 20;
+    const size  = Math.min(wrapW, wrapH, 380);
+    board.style.width  = size + 'px';
+    board.style.height = size + 'px';
+  }
+
+  // Reserve always shows player's own pieces — they're your hand
+  // Color stays constant; pulse communicates AI thinking
+  renderGameReserve(cfg.side, ['king', 'rook', 'bishop']);
+
+  // White always goes first — if player is black, AI starts (pulse immediately)
+  setTurnIndicator(cfg.side === 'white' ? 'player' : 'ai');
+}
+
+function renderGameReserve(color, pieces) {
+  const reserve = document.getElementById('gameReserve');
+  reserve.innerHTML = '';
+  pieces.forEach(type => {
+    const btn = document.createElement('div');
+    btn.className = 'game-rp';
+    btn.dataset.type = type;
+    btn.innerHTML = PIECE_SVGS[color][type];
+    btn.onclick = () => selectReservePiece(btn, type);
+    reserve.appendChild(btn);
+  });
+}
+
+function selectReservePiece(btn, type) {
+  document.querySelectorAll('.game-rp').forEach(b => b.classList.remove('sel-rp'));
+  btn.classList.add('sel-rp');
+}
+
+function setTurnIndicator(whose) {
+  const el = document.getElementById('gameTurnIndicator');
+  const reserve = document.getElementById('gameReserve');
+  const thinking = document.getElementById('gameThinking');
+  if (whose === 'ai') {
+    el.textContent = lang === 'sr' ? 'VI...' : 'AI...';
+    el.style.color = 'var(--muted)';
+    reserve.classList.add('thinking');
+    thinking.classList.add('visible');
+  } else {
+    el.textContent = lang === 'sr' ? 'Tvoj potez' : 'Your turn';
+    el.style.color = 'var(--text)';
+    reserve.classList.remove('thinking');
+    thinking.classList.remove('visible');
+  }
+}
+
+// Toolbar stubs — will wire to v37 logic on merge
+function gameUndo() { console.log('Undo'); }
+function gameHint() { console.log('Hint'); }
+function gameDraw() { console.log('Draw offer'); }
+function goToMenu() { closeMoreSheet(); slideTo('s-menu'); }
+
+// More sheet
+function openMoreSheet() {
+  document.getElementById('sheetBackdrop').classList.add('open');
+  document.getElementById('moreSheet').classList.add('open');
+}
+function closeMoreSheet() {
+  document.getElementById('sheetBackdrop').classList.remove('open');
+  document.getElementById('moreSheet').classList.remove('open');
+}
+function sheetRules()   { closeMoreSheet(); console.log('Rules'); }
+function sheetHistory() { closeMoreSheet(); console.log('History'); }
+function sheetNewGame() { closeMoreSheet(); slideTo('s-difficulty'); }
+function sheetShare()   { closeMoreSheet(); shareGame(); }
+function sheetMenu()    { closeMoreSheet(); slideTo('s-menu'); }
+
+
+
+
+// ═══════════════════════════════════════════
 //  SIDE SELECT
 // ═══════════════════════════════════════════
-let selectedSide = 'white'; // default
+let selectedSide = 'white';
 
 function selectSide(side) {
   selectedSide = side;
@@ -1422,13 +1933,14 @@ function selectSide(side) {
 }
 
 function startBattle() {
-  // Store choices for the game to use later
   window.gameConfig = { diff: selectedDiff, side: selectedSide };
   slideTo('s-game');
+  setTimeout(initGameScreen, 380); // after slide animation (320ms) completes
 }
 
-
-let selectedDiff = 'peasant'; // default
+// ═══════════════════════════════════════════
+//  DIFFICULTY SELECT
+// ═══════════════════════════════════════════
 
 function selectDiff(card) {
   // Deselect all
