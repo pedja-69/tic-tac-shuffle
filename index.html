@@ -1718,6 +1718,52 @@ h1 {
 .win-sheet-title    { font-size: calc(clamp(1.3rem,5vw,1.7rem) * var(--fs-base)); }
 .win-sheet-sub      { font-size: calc(0.88rem * var(--fs-base)); }
 .roast-bubble       { font-size: calc(0.82rem * var(--fs-base)); }
+.setting-desc       { font-size: calc(0.72rem * var(--fs-base)); }
+.setting-label      { font-size: calc(0.82rem * var(--fs-base)); }
+
+/* Side select — split battle/back row */
+.side-battle-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  max-width: 380px;
+  flex-shrink: 0;
+}
+.side-back-btn {
+  flex: 1;
+  background: transparent;
+  border: 1px solid var(--border2);
+  border-radius: 2px;
+  color: var(--muted);
+  font-family: 'Cinzel', serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 13px 8px;
+  cursor: pointer;
+  transition: all 0.18s;
+  text-align: center;
+  text-transform: uppercase;
+}
+.side-back-btn:hover { border-color: var(--gold-dim); color: var(--text); }
+.side-battle-btn {
+  flex: 2;
+  background: linear-gradient(135deg, #7a5e1e 0%, #c8a84b 50%, #7a5e1e 100%);
+  border: none;
+  border-radius: 2px;
+  color: #0e0c09;
+  font-family: 'Cinzel', serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  padding: 13px 8px;
+  cursor: pointer;
+  transition: all 0.18s;
+  text-transform: uppercase;
+  text-align: center;
+}
+.side-battle-btn:hover { filter: brightness(1.12); transform: translateY(-1px); box-shadow: 0 4px 24px rgba(200,168,75,0.3); }
+.side-battle-btn:active { transform: translateY(0); filter: brightness(0.95); }
 </style>
 </head>
 <body>
@@ -1798,7 +1844,6 @@ h1 {
        SCREEN 2: DIFFICULTY SELECT
   ══════════════════════════════ -->
   <div class="screen" id="s-difficulty">
-    <button class="back-btn" onclick="slideBack()">← Back</button>
 
     <div class="diff-screen">
 
@@ -1855,9 +1900,12 @@ h1 {
 
       </div><!-- /diff-grid -->
 
-      <button class="diff-continue-btn" id="diffContinueBtn" onclick="slideTo('s-sideselect')">
-        <span id="diffContinueText">Continue</span> →
-      </button>
+      <div class="side-battle-row">
+        <button class="side-back-btn" onclick="slideBack()">← <span id="diffBackText">Back</span></button>
+        <button class="diff-continue-btn side-battle-btn" id="diffContinueBtn" onclick="slideTo('s-sideselect')">
+          <span id="diffContinueText">Continue</span> →
+        </button>
+      </div>
 
     </div><!-- /diff-screen -->
   </div>
@@ -1867,7 +1915,6 @@ h1 {
        SCREEN 3: SIDE SELECT
   ══════════════════════════════ -->
   <div class="screen" id="s-sideselect">
-    <button class="back-btn" onclick="slideBack()">← Back</button>
 
     <div class="side-screen">
 
@@ -1901,9 +1948,12 @@ h1 {
 
       </div><!-- /side-kings -->
 
-      <button class="diff-continue-btn" id="sideBattleBtn" onclick="startBattle()">
-        ⚔ <span id="sideBattleText">To Battle!</span>
-      </button>
+      <div class="side-battle-row">
+        <button class="side-back-btn" onclick="slideBack()">← <span id="sideBackText">Back</span></button>
+        <button class="side-battle-btn" id="sideBattleBtn" onclick="startBattle()">
+          ⚔ <span id="sideBattleText">To Battle!</span>
+        </button>
+      </div>
 
     </div><!-- /side-screen -->
   </div>
@@ -2371,6 +2421,7 @@ const LANG_DATA = {
     diffTitle:       'Choose Your Opponent',
     diffSub:         'Who dares enter the phone booth?',
     diffContinue:    'Continue',
+    diffBack:        'Back',
     sideTitle:       'Choose Your Side',
     sideSub:         'White moves first',
     sideWhiteLabel:  'White',
@@ -2378,6 +2429,7 @@ const LANG_DATA = {
     sideBlackLabel:  'Black',
     sideBlackSub:    'Moves second',
     sideBattle:      'To Battle!',
+    sideBack:        'Back',
   },
   sr: {
     flag:            '🇷🇸',
@@ -2402,6 +2454,7 @@ const LANG_DATA = {
     diffTitle:       'Izaberi protivnika',
     diffSub:         'Ko se usuđuje ući u telefonsku govornicu?',
     diffContinue:    'Nastavi',
+    diffBack:        'Nazad',
     sideTitle:       'Izaberi stranu',
     sideSub:         'Beli ide prvi',
     sideWhiteLabel:  'Beli',
@@ -2409,6 +2462,7 @@ const LANG_DATA = {
     sideBlackLabel:  'Crni',
     sideBlackSub:    'Ide drugi',
     sideBattle:      'U bitku!',
+    sideBack:        'Nazad',
   }
 };
 
@@ -2449,6 +2503,7 @@ function applyLang() {
     document.getElementById('sideWhiteSub').textContent   = d.sideWhiteSub;
     document.getElementById('sideBlackSub').textContent   = d.sideBlackSub;
     document.getElementById('sideBattleText').textContent = d.sideBattle;
+    const sbt = document.getElementById('sideBackText'); if(sbt) sbt.textContent = d.sideBack;
     document.querySelectorAll('.side-card-label').forEach(el => {
       if (el.dataset[lang]) el.textContent = el.dataset[lang];
     });
@@ -2459,6 +2514,7 @@ function applyLang() {
     document.getElementById('diffTitle').textContent           = d.diffTitle;
     document.getElementById('diffSub').textContent             = d.diffSub;
     document.getElementById('diffContinueText').textContent    = d.diffContinue;
+    const dbt = document.getElementById('diffBackText'); if(dbt) dbt.textContent = d.diffBack;
     document.querySelectorAll('.diff-card-name').forEach(el => {
       if (el.dataset[lang]) el.textContent = el.dataset[lang];
     });
@@ -2625,7 +2681,7 @@ const TR = {
     moving: (type, sq) => `Moving ${type} from ${sq}. Click a highlighted square.`,
     // Win overlay
     victory: 'Victory!', victoryDesc: 'Your pieces aligned. The booth is yours.',
-    defeated: 'Defeated.', defeatedDesc: 'The AI claimed the line. Care for a rematch?',
+    defeated: 'Defeated.', defeatedDesc: (opp) => `${opp} claimed the line. Care for a rematch?`,
     drawTitle: 'Draw!',
     drawNoMoves: 'No legal moves remain. A hard-fought stalemate.',
     drawRep: 'The same position repeated three times. Neither side could break the deadlock.',
@@ -2737,7 +2793,7 @@ const TR = {
     placing: (type) => `Postavljaš ${type}. Klikni na označeno polje.`,
     moving: (type, sq) => `Pomeraš ${type} sa ${sq}. Klikni na označeno polje.`,
     victory: 'Pobeda!', victoryDesc: 'Tvoje figure su poravnate. Govornica je tvoja.',
-    defeated: 'Poražen.', defeatedDesc: 'VI je završilo liniju. Hoćeš revanš?',
+    defeated: 'Poražen.', defeatedDesc: (opp) => `${opp} je završio liniju. Hoćeš revanš?`,
     drawTitle: 'Remi!',
     drawNoMoves: 'Nema legalnih poteza. Teško izboreni remi.',
     drawRep: 'Ista pozicija ponovljena tri puta. Ni jedna strana nije mogla da probije pat poziciju.',
@@ -3358,7 +3414,8 @@ function renderStatus() {
     else {
       gem.className=`turn-gem gem-${G.winner}`;
       name.textContent=(G.winner==='white'?t('white'):t('black'))+' — '+(G.winner===G.playerColor?t('victory'):t('defeated'));
-      sub.textContent=G.winner===G.playerColor?t('victoryDesc'):t('defeatedDesc');
+      const _opp = DIFF_DISPLAY[window.gameConfig?.diff]?.[lang] || 'AI';
+      sub.textContent=G.winner===G.playerColor?t('victoryDesc'):t('defeatedDesc',_opp);
     }
     return;
   }
@@ -3537,7 +3594,7 @@ function endTurn() {
 }
 
 function capitalTurn(c) { return c==='white'?'White':'Black'; }
-function updateSub(msg) { document.getElementById('turnSub').textContent=msg; }
+function updateSub(msg) { const el=document.getElementById('turnSub'); if(el) el.textContent=msg; }
 
 // ═══════════════════════════════════════════════════
 //  AI TURN
@@ -3654,7 +3711,8 @@ function showWin(winner) {
   } else {
     titleEl.textContent = t('defeated');
     titleEl.className   = 'win-sheet-title defeat';
-    subEl.textContent   = t('defeatedDesc');
+    const oppName = DIFF_DISPLAY[window.gameConfig?.diff]?.[lang] || 'AI';
+    subEl.textContent   = t('defeatedDesc', oppName);
   }
 
   const isLoss = winner !== G.playerColor && winner !== 'draw' && winner !== 'repetition';
@@ -4434,7 +4492,8 @@ function initGameScreen() {
   document.getElementById('logBox').innerHTML = '';
 
   // Launch v37 game engine
-  initGame(cfg.side, v37diff, 'rated', 'fixed');
+  const _opening = (typeof openingFixed !== 'undefined' ? openingFixed : true) ? 'fixed' : 'free';
+  initGame(cfg.side, v37diff, 'rated', _opening);
 
   // Size the board to fit available space
   resizeBoard();
@@ -4672,6 +4731,7 @@ function goToMenu() {
 //  SIDE SELECT
 // ═══════════════════════════════════════════
 let selectedSide = 'white';
+let selectedDiff = 'peasant';
 
 function selectSide(side) {
   selectedSide = side;
