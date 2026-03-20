@@ -1526,6 +1526,198 @@ h1 {
   pointer-events: none;
   z-index: 500;
 }
+
+/* ── History trash button ── */
+.hist-trash-btn {
+  background: transparent;
+  border: 1px solid var(--border2);
+  border-radius: 2px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  line-height: 1;
+}
+.hist-trash-btn:hover { border-color: var(--red); color: #c06060; }
+
+/* Confirm bar */
+.hist-confirm-bar {
+  background: rgba(168,64,64,0.08);
+  border: 1px solid rgba(168,64,64,0.3);
+  border-radius: 2px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+  animation: slideDown 0.2s ease;
+}
+@keyframes slideDown {
+  from { opacity:0; transform:translateY(-6px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.hist-confirm-text {
+  font-size: 0.78rem;
+  color: #c06060;
+  font-style: italic;
+  display: block;
+}
+.hist-confirm-yes {
+  flex: 1;
+  background: rgba(168,64,64,0.15);
+  border: 1px solid rgba(168,64,64,0.5);
+  border-radius: 2px;
+  color: #c06060;
+  font-family: 'Cinzel', serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.hist-confirm-yes:hover { background: rgba(168,64,64,0.25); }
+.hist-confirm-no {
+  flex: 1;
+  background: transparent;
+  border: 1px solid var(--border2);
+  border-radius: 2px;
+  color: var(--muted);
+  font-family: 'Cinzel', serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.hist-confirm-no:hover { border-color: var(--gold-dim); color: var(--text); }
+
+/* ══════════════════════════════════════════════
+   SETTINGS SCREEN
+══════════════════════════════════════════════ */
+.settings-screen {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  padding: clamp(52px,11vh,80px) 24px clamp(20px,4vh,36px);
+}
+.settings-header { text-align: center; width: 100%; flex-shrink: 0; }
+.settings-title {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(1rem,4.5vw,1.3rem);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+.settings-body {
+  flex: 1;
+  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--border);
+  gap: 16px;
+}
+.setting-row:last-child { border-bottom: none; }
+.setting-info { flex: 1; }
+.setting-label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+.setting-desc {
+  font-size: 0.72rem;
+  font-style: italic;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+/* Font size +/- control */
+.font-size-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.font-btn {
+  width: 34px; height: 34px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 2px;
+  color: var(--text);
+  font-size: 1.1rem;
+  font-family: 'Cinzel', serif;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.font-btn:hover:not(:disabled) { border-color: var(--gold-dim); color: var(--gold); }
+.font-btn:disabled { opacity: 0.28; cursor: default; }
+.font-size-display {
+  font-family: 'Cinzel', serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+  min-width: 44px;
+  text-align: center;
+}
+
+/* Toggle switch */
+.toggle-btn {
+  width: 44px; height: 26px;
+  background: var(--border2);
+  border: 1px solid var(--border2);
+  border-radius: 13px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  position: relative;
+  flex-shrink: 0;
+  padding: 0;
+}
+.toggle-btn.on {
+  background: var(--gold-dim);
+  border-color: var(--gold-dim);
+}
+.toggle-knob {
+  position: absolute;
+  top: 2px; left: 2px;
+  width: 20px; height: 20px;
+  background: var(--muted);
+  border-radius: 50%;
+  transition: transform 0.2s, background 0.2s;
+  display: block;
+}
+.toggle-btn.on .toggle-knob {
+  transform: translateX(18px);
+  background: var(--gold);
+}
+
+/* ── Font size CSS variables applied to game text ── */
+:root {
+  --fs-base: 1;  /* multiplier: 1 = normal, 1.2 = large, 1.4 = xl */
+}
+/* Game screen text that scales */
+.game-topbar        { font-size: calc(0.62rem * var(--fs-base)); }
+.game-diff-badge    { font-size: calc(0.62rem * var(--fs-base)); }
+.game-mode-badge    { font-size: calc(0.62rem * var(--fs-base)); }
+.game-turn-indicator{ font-size: calc(0.62rem * var(--fs-base)); }
+.gt-label           { font-size: calc(0.55rem * var(--fs-base)); }
+.diff-card-quote    { font-size: calc(0.68rem * var(--fs-base)); }
+.diff-card-name     { font-size: calc(0.82rem * var(--fs-base)); }
+.side-card-label    { font-size: calc(0.88rem * var(--fs-base)); }
+.side-card-sub      { font-size: calc(0.72rem * var(--fs-base)); }
+.win-sheet-title    { font-size: calc(clamp(1.3rem,5vw,1.7rem) * var(--fs-base)); }
+.win-sheet-sub      { font-size: calc(0.88rem * var(--fs-base)); }
+.roast-bubble       { font-size: calc(0.82rem * var(--fs-base)); }
 </style>
 </head>
 <body>
@@ -1808,14 +2000,57 @@ h1 {
 
 
   <!-- ══════════════════════════════
-       SCREEN: SETTINGS (stub)
+       SCREEN: SETTINGS
   ══════════════════════════════ -->
   <div class="screen" id="s-settings">
     <button class="back-btn" onclick="slideBack()">← Back</button>
-    <div class="screen-placeholder">
-      <div class="ph-title">⚙ Settings</div>
-      <div>Settings — coming soon</div>
-    </div>
+    <div class="settings-screen">
+
+      <div class="settings-header">
+        <div class="settings-title" id="settingsTitle">Settings</div>
+        <div class="divider" style="margin-top:10px"></div>
+      </div>
+
+      <div class="settings-body">
+
+        <!-- Font Size -->
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label" id="settingFontLabel">Text Size</div>
+            <div class="setting-desc" id="settingFontDesc">Adjust in-game text and labels</div>
+          </div>
+          <div class="font-size-control">
+            <button class="font-btn" id="fontDecrBtn" onclick="changeFontSize(-1)">−</button>
+            <span class="font-size-display" id="fontSizeDisplay">Normal</span>
+            <button class="font-btn" id="fontIncrBtn" onclick="changeFontSize(1)">+</button>
+          </div>
+        </div>
+
+        <!-- Board Coordinates -->
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label" id="settingCoordsLabel">Board Coordinates</div>
+            <div class="setting-desc" id="settingCoordsDesc">Show a–e and 1–5 labels</div>
+          </div>
+          <button class="toggle-btn" id="coordsToggle" onclick="toggleCoords()">
+            <span class="toggle-knob"></span>
+          </button>
+        </div>
+
+        <!-- Opening Rule -->
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label" id="settingOpeningLabel">Opening Rule</div>
+            <div class="setting-desc" id="settingOpeningDesc">White must open on c3</div>
+          </div>
+          <button class="toggle-btn" id="openingToggle" onclick="toggleOpening()">
+            <span class="toggle-knob"></span>
+          </button>
+        </div>
+
+      </div><!-- /settings-body -->
+
+    </div><!-- /settings-screen -->
   </div>
 
 
@@ -1927,12 +2162,21 @@ h1 {
   <div class="history-box">
     <div class="history-header">
       <div class="history-title" id="historyTitle">History</div>
-      <button class="history-close" onclick="closeHistory()">Close</button>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="hist-trash-btn" id="clearBtn" onclick="clearHistory()" title="Clear history">🗑</button>
+        <button class="history-close" onclick="closeHistory()">Close</button>
+      </div>
+    </div>
+    <!-- Confirm bar — slides down under header when trash is clicked -->
+    <div class="hist-confirm-bar hidden" id="clearConfirmBar">
+      <span class="hist-confirm-text">⚠ Delete all games for this difficulty?</span>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button class="hist-confirm-yes" onclick="clearHistoryConfirmed()">Delete</button>
+        <button class="hist-confirm-no"  onclick="cancelClearHistory()">Cancel</button>
+      </div>
     </div>
     <div class="history-summary" id="historySummary"></div>
     <div class="history-list"    id="historyList"></div>
-    <button class="clear-btn" id="clearBtn" onclick="clearHistory()">Clear history</button>
-    <button class="clear-btn" id="clearConfirmBtn" style="display:none;border-color:var(--red);color:#c06060" onclick="clearHistoryConfirmed()">⚠ Confirm — cannot be undone</button>
   </div>
 </div>
 
@@ -2228,6 +2472,7 @@ function toggleLang() {
   lang = lang === 'en' ? 'sr' : 'en';
   localStorage.setItem(LANG_KEY, lang);
   applyLang();
+  applySettingsLang();
 }
 
 applyLang();
@@ -3914,22 +4159,25 @@ function openHistory(diff) {
 }
 
 function clearHistory() {
-  // Show inline confirmation instead of confirm() which is blocked in iframes
-  document.getElementById('clearBtn').style.display = 'none';
-  document.getElementById('clearConfirmBtn').style.display = 'block';
+  // Show confirm bar under the header
+  document.getElementById('clearConfirmBar').classList.remove('hidden');
+}
+
+function cancelClearHistory() {
+  document.getElementById('clearConfirmBar').classList.add('hidden');
 }
 
 function clearHistoryConfirmed() {
   if(!historyDiff) return;
   saveScores(historyDiff, []);
+  document.getElementById('clearConfirmBar').classList.add('hidden');
   openHistory(historyDiff);
   renderScoreStrip();
 }
 
 function closeHistory() {
   document.getElementById('historyOverlay').classList.add('hidden');
-  document.getElementById('clearBtn').style.display = 'block';
-  document.getElementById('clearConfirmBtn').style.display = 'none';
+  document.getElementById('clearConfirmBar').classList.add('hidden');
 }
 
 function openMoveLog(diff, idx) {
@@ -4075,7 +4323,8 @@ function startGame(mode) {
   // Re-use last gameConfig
   const cfg = window.gameConfig || { diff: 'peasant', side: 'white' };
   const v37diff = DIFF_MAP[cfg.diff] || 'easy';
-  initGame(cfg.side, v37diff, 'rated', 'fixed');
+  const opening = openingFixed ? 'fixed' : 'free';
+  initGame(cfg.side, v37diff, 'rated', opening);
   ['pip1','pip2','pip3'].forEach(id=>{ const el=document.getElementById(id); if(el) el.className='rep-pip'; });
   document.getElementById('gtUndo').disabled = true;
   document.getElementById('gtHint').disabled = false;
@@ -4557,10 +4806,114 @@ window.addEventListener('appinstalled', () => {
 });
 
 
+
+// ═══════════════════════════════════════════
+//  SETTINGS
+// ═══════════════════════════════════════════
+const SETTINGS_KEY = 'tts_settings';
+
+function loadSettings() {
+  try { return JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}; }
+  catch(e) { return {}; }
+}
+function saveSettings(s) {
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); } catch(e) {}
+}
+
+// Font size: 0=Normal, 1=Large, 2=XL
+const FONT_STEPS = [
+  { label: { en:'Normal', sr:'Normalno' }, scale: 1   },
+  { label: { en:'Large',  sr:'Veliko'   }, scale: 1.25 },
+  { label: { en:'XL',     sr:'XL'       }, scale: 1.5  },
+];
+let fontStep = 0;
+
+function applyFontSize() {
+  const scale = FONT_STEPS[fontStep].scale;
+  document.documentElement.style.setProperty('--fs-base', scale);
+  const lbl = FONT_STEPS[fontStep].label[lang] || FONT_STEPS[fontStep].label.en;
+  const el = document.getElementById('fontSizeDisplay');
+  if (el) el.textContent = lbl;
+  // Button states
+  const decr = document.getElementById('fontDecrBtn');
+  const incr = document.getElementById('fontIncrBtn');
+  if (decr) decr.disabled = fontStep === 0;
+  if (incr) incr.disabled = fontStep === FONT_STEPS.length - 1;
+}
+
+function changeFontSize(dir) {
+  fontStep = Math.max(0, Math.min(FONT_STEPS.length - 1, fontStep + dir));
+  applyFontSize();
+  const s = loadSettings(); s.fontStep = fontStep; saveSettings(s);
+}
+
+// Coords toggle
+let showCoords = false;
+
+function applyCoords() {
+  const toggle = document.getElementById('coordsToggle');
+  if (toggle) toggle.classList.toggle('on', showCoords);
+  // Board coordinate labels shown/hidden
+  const rankEl = document.getElementById('rankLabels');
+  const fileEl = document.getElementById('fileLabels');
+  // They're hidden in our layout anyway (v37 fills them but they're not in game screen)
+  // This will wire up properly when board labels are added to game screen
+}
+
+function toggleCoords() {
+  showCoords = !showCoords;
+  applyCoords();
+  const s = loadSettings(); s.showCoords = showCoords; saveSettings(s);
+}
+
+// Opening rule toggle
+let openingFixed = true;
+
+function applyOpeningToggle() {
+  const toggle = document.getElementById('openingToggle');
+  if (toggle) toggle.classList.toggle('on', openingFixed);
+  const desc = document.getElementById('settingOpeningDesc');
+  if (desc) desc.textContent = openingFixed
+    ? (lang==='sr' ? 'Beli mora otvoriti na c3' : 'White must open on c3')
+    : (lang==='sr' ? 'Beli otvara gde želi'     : 'White opens anywhere');
+}
+
+function toggleOpening() {
+  openingFixed = !openingFixed;
+  applyOpeningToggle();
+  const s = loadSettings(); s.openingFixed = openingFixed; saveSettings(s);
+}
+
+function initSettings() {
+  const s = loadSettings();
+  fontStep     = s.fontStep     !== undefined ? s.fontStep     : 0;
+  showCoords   = s.showCoords   !== undefined ? s.showCoords   : false;
+  openingFixed = s.openingFixed !== undefined ? s.openingFixed : true;
+  applyFontSize();
+  applyCoords();
+  applyOpeningToggle();
+}
+
+// Settings screen translation keys
+function applySettingsLang() {
+  const isSr = lang === 'sr';
+  const el = (id) => document.getElementById(id);
+  if (el('settingsTitle'))      el('settingsTitle').textContent      = isSr ? 'Podešavanja'                   : 'Settings';
+  if (el('settingFontLabel'))   el('settingFontLabel').textContent   = isSr ? 'Veličina teksta'               : 'Text Size';
+  if (el('settingFontDesc'))    el('settingFontDesc').textContent    = isSr ? 'Podesi tekst i oznake u igri'  : 'Adjust in-game text and labels';
+  if (el('settingCoordsLabel')) el('settingCoordsLabel').textContent = isSr ? 'Koordinate table'              : 'Board Coordinates';
+  if (el('settingCoordsDesc'))  el('settingCoordsDesc').textContent  = isSr ? 'Prikaži oznake a–e i 1–5'     : 'Show a–e and 1–5 labels';
+  if (el('settingOpeningLabel'))el('settingOpeningLabel').textContent= isSr ? 'Pravilo otvaranja'             : 'Opening Rule';
+  // Re-apply font step label in current language
+  applyFontSize();
+  applyOpeningToggle();
+}
+
 // ═══════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════
 loadName();
+initSettings();
 </script>
 </body>
 </html>
