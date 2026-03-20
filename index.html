@@ -76,27 +76,31 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
-  /* Start off-screen to the right (except #s-menu which starts active) */
   transform: translateX(100%);
   transition: transform var(--slide-dur) cubic-bezier(0.4, 0, 0.2, 1);
   will-change: transform;
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
+  /* Prevent off-screen screens from intercepting taps */
+  pointer-events: none;
+  visibility: hidden;
 }
 .screen.active {
   transform: translateX(0%);
+  pointer-events: all;
+  visibility: visible;
 }
 .screen.exit-left {
-  transform: translateX(-30%); /* Depth effect: exiting screen slides slightly left */
+  transform: translateX(-30%);
+  /* Still briefly visible during transition */
+  visibility: visible;
+  pointer-events: none;
 }
 
 /* ══════════════════════════════════════════════
-   MAIN MENU SCREEN
+   MAIN MENU SCREEN — starts active, no ID override needed
 ══════════════════════════════════════════════ */
-#s-menu {
-  transform: translateX(0%); /* Default active */
-}
 
 /* ── Background reveal layer ── */
 #bg-reveal {
@@ -633,11 +637,11 @@ h1 {
 
       <!-- MID: Nav buttons -->
       <div class="mid-section">
-        <button class="menu-btn menu-btn-primary" onclick="slideTo('s-difficulty')">⚔ New Game</button>
-        <button class="menu-btn menu-btn-locked">
+        <button class="menu-btn menu-btn-primary" id="btnNewGame" onclick="slideTo('s-difficulty')">⚔ New Game</button>
+        <button class="menu-btn menu-btn-locked" id="btnCampaign">
           ✦ Campaign <span class="lock-tag">— coming soon</span>
         </button>
-        <button class="menu-btn" onclick="slideTo('s-halloffame')">🏆 Hall of Fame</button>
+        <button class="menu-btn" id="btnHallOfFame" onclick="slideTo('s-halloffame')">🏆 Hall of Fame</button>
       </div>
 
       <!-- BOTTOM: Name row + icon strip -->
@@ -651,15 +655,15 @@ h1 {
         </div>
 
         <div class="icon-strip">
-          <button class="icon-btn" onclick="shareGame()">
+          <button class="icon-btn" data-icon="share" onclick="shareGame()">
             <span class="ib-icon">📤</span>
             <span class="ib-label">Share</span>
           </button>
-          <button class="icon-btn" onclick="slideTo('s-changelog')">
+          <button class="icon-btn" data-icon="news" onclick="slideTo('s-changelog')">
             <span class="ib-icon">📜</span>
             <span class="ib-label">News</span>
           </button>
-          <button class="icon-btn" onclick="slideTo('s-settings')">
+          <button class="icon-btn" data-icon="settings" onclick="slideTo('s-settings')">
             <span class="ib-icon">⚙</span>
             <span class="ib-label">Settings</span>
           </button>
@@ -759,15 +763,15 @@ h1 {
 ══════════════════════════════ -->
 <div class="modal-overlay" id="nameModal">
   <div class="modal-box">
-    <div class="modal-title">🪶 Enter the Hall of Fame</div>
-    <div class="modal-sub">Your name will stand among champions</div>
+    <div class="modal-title" id="modalTitle">🪶 Enter the Hall of Fame</div>
+    <div class="modal-sub" id="modalSub">Your name will stand among champions</div>
     <input class="modal-input" id="nameInput" type="text" maxlength="20"
       placeholder="Your name…"
       onkeydown="if(event.key==='Enter') saveName()">
-    <div class="modal-note">Only your victories will be recorded.</div>
+    <div class="modal-note" id="modalNote">Only your victories will be recorded.</div>
     <div class="modal-btn-row">
-      <button class="modal-btn" onclick="closeNameModal()">Cancel</button>
-      <button class="modal-btn modal-btn-gold" onclick="saveName()">Confirm</button>
+      <button class="modal-btn" id="modalCancel" onclick="closeNameModal()">Cancel</button>
+      <button class="modal-btn modal-btn-gold" id="modalConfirm" onclick="saveName()">Confirm</button>
     </div>
   </div>
 </div>
@@ -788,6 +792,12 @@ h1 {
 
 <script>
 // ═══════════════════════════════════════════
+//  CONSTANTS — declared first, used everywhere
+// ═══════════════════════════════════════════
+const NAME_KEY = 'tts_player_name';
+const LANG_KEY = 'tts_lang';
+
+// ═══════════════════════════════════════════
 //  SCREEN MANAGER — slide left/right
 // ═══════════════════════════════════════════
 const screenHistory = [];
@@ -797,23 +807,30 @@ function slideTo(targetId) {
   const target  = document.getElementById(targetId);
   if (!target || current === target) return;
 
-  // Push to history so we can go back
   screenHistory.push(current.id);
 
-  // Exit current to the left (depth effect)
+  // Exit current to the left
   current.classList.add('exit-left');
   current.classList.remove('active');
 
-  // Enter target from the right
-  target.style.transform = 'translateX(100%)';
-  // Force reflow so the starting position registers
+  // Target starts off-screen right (default CSS state), just add active
+  // Clear any inline styles from a previous back-navigation
+  target.style.transition  = '';
+  target.style.transform   = '';
+  target.style.visibility  = 'visible';
+  target.style.pointerEvents = 'none'; // not interactive until settled
+  // Force reflow so browser registers start position before transition
   target.getBoundingClientRect();
   target.classList.add('active');
 
-  // Clean up exit class after transition
   const dur = parseInt(getComputedStyle(document.documentElement)
     .getPropertyValue('--slide-dur')) || 320;
-  setTimeout(() => current.classList.remove('exit-left'), dur);
+  setTimeout(() => {
+    current.classList.remove('exit-left');
+    // Let CSS take over fully
+    target.style.visibility   = '';
+    target.style.pointerEvents = '';
+  }, dur);
 }
 
 function slideBack() {
@@ -823,20 +840,31 @@ function slideBack() {
   const prev    = document.getElementById(prevId);
   if (!prev) return;
 
-  // Current exits to the right
+  // Snap prev to slightly left (no transition), then animate to 0
+  prev.style.transition    = 'none';
+  prev.style.transform     = 'translateX(-30%)';
+  prev.style.visibility    = 'visible';
+  prev.style.pointerEvents = 'none';
+  prev.getBoundingClientRect(); // force reflow
+  prev.style.transition = '';
+  prev.style.transform  = '';
+  prev.classList.add('active');
+
+  // Current: animate out to right
   current.style.transition = 'none';
   current.style.transform  = 'translateX(0%)';
   current.getBoundingClientRect();
   current.style.transition = '';
   current.classList.remove('active');
-  current.style.transform  = 'translateX(100%)';
 
-  // Prev slides in from (slight) left
-  prev.style.transition = 'none';
-  prev.style.transform  = 'translateX(-30%)';
-  prev.getBoundingClientRect();
-  prev.style.transition = '';
-  prev.classList.add('active'); // transition kicks in → slides to 0
+  const dur = parseInt(getComputedStyle(document.documentElement)
+    .getPropertyValue('--slide-dur')) || 320;
+  setTimeout(() => {
+    current.style.transform   = '';
+    current.style.transition  = '';
+    prev.style.visibility     = '';
+    prev.style.pointerEvents  = '';
+  }, dur);
 }
 
 // Hardware back button / swipe-back on Android
@@ -870,19 +898,82 @@ bgReveal.addEventListener('click', () => {
 // ═══════════════════════════════════════════
 //  LANGUAGE TOGGLE
 // ═══════════════════════════════════════════
-const LANG_KEY = 'tts_lang';
 let lang = localStorage.getItem(LANG_KEY) || 'en';
 
 const LANG_DATA = {
-  en: { flag: '🇬🇧', label: 'EN', tagline: 'a knife fight in a phone booth' },
-  sr: { flag: '🇷🇸', label: 'SR', tagline: 'tuča noževima u telefonskoj govornici' }
+  en: {
+    flag:            '🇬🇧',
+    label:           'EN',
+    tagline:         'a knife fight in a phone booth',
+    btnNewGame:      '⚔ New Game',
+    btnCampaign:     '✦ Campaign',
+    btnCampaignSub:  '— coming soon',
+    btnHallOfFame:   '🏆 Hall of Fame',
+    nameLabel:       'Adventurer',
+    namePlaceholder: 'Enter the Hall of Fame…',
+    iconShare:       'Share',
+    iconNews:        'News',
+    iconSettings:    'Settings',
+    modalTitle:      '🪶 Enter the Hall of Fame',
+    modalSub:        'Your name will stand among champions',
+    modalInput:      'Your name…',
+    modalNote:       'Only your victories will be recorded.',
+    modalCancel:     'Cancel',
+    modalConfirm:    'Confirm',
+    bgHint:          'Tap to return',
+  },
+  sr: {
+    flag:            '🇷🇸',
+    label:           'SR',
+    tagline:         'tuča noževima u telefonskoj govornici',
+    btnNewGame:      '⚔ Nova Igra',
+    btnCampaign:     '✦ Kampanja',
+    btnCampaignSub:  '— uskoro',
+    btnHallOfFame:   '🏆 Kuća Slavnih',
+    nameLabel:       'Junak',
+    namePlaceholder: 'Uđi u Kuću Slavnih…',
+    iconShare:       'Podeli',
+    iconNews:        'Novosti',
+    iconSettings:    'Podešavanja',
+    modalTitle:      '🪶 Uđi u Kuću Slavnih',
+    modalSub:        'Tvoje ime će stajati među šampionima',
+    modalInput:      'Tvoje ime…',
+    modalNote:       'Samo tvoje pobede biće zabeležene.',
+    modalCancel:     'Otkaži',
+    modalConfirm:    'Potvrdi',
+    bgHint:          'Tapni za povratak',
+  }
 };
 
 function applyLang() {
   const d = LANG_DATA[lang];
+  // Flag / label
   document.getElementById('langFlag').textContent  = d.flag;
   document.getElementById('langLabel').textContent = d.label;
-  document.querySelector('.tagline').textContent   = d.tagline;
+  // Main menu text
+  document.querySelector('.tagline').textContent              = d.tagline;
+  document.getElementById('btnNewGame').textContent           = d.btnNewGame;
+  document.getElementById('btnCampaign').childNodes[0].textContent = d.btnCampaign + ' ';
+  document.querySelector('.lock-tag').textContent             = d.btnCampaignSub;
+  document.getElementById('btnHallOfFame').textContent        = d.btnHallOfFame;
+  document.querySelector('.name-row-label').textContent       = d.nameLabel;
+  // Only update placeholder text if no name is saved
+  if (!localStorage.getItem(NAME_KEY)) {
+    const nd = document.getElementById('nameDisplay');
+    nd.textContent = d.namePlaceholder;
+  }
+  document.querySelector('[data-icon="share"] .ib-label').textContent    = d.iconShare;
+  document.querySelector('[data-icon="news"] .ib-label').textContent     = d.iconNews;
+  document.querySelector('[data-icon="settings"] .ib-label').textContent = d.iconSettings;
+  // Name modal
+  document.getElementById('modalTitle').textContent   = d.modalTitle;
+  document.getElementById('modalSub').textContent     = d.modalSub;
+  document.getElementById('nameInput').placeholder    = d.modalInput;
+  document.getElementById('modalNote').textContent    = d.modalNote;
+  document.getElementById('modalCancel').textContent  = d.modalCancel;
+  document.getElementById('modalConfirm').textContent = d.modalConfirm;
+  // Bg hint
+  document.getElementById('bg-hint').textContent      = d.bgHint;
 }
 
 function toggleLang() {
@@ -897,8 +988,6 @@ applyLang();
 // ═══════════════════════════════════════════
 //  PLAYER NAME
 // ═══════════════════════════════════════════
-const NAME_KEY = 'tts_player_name';
-
 function loadName() {
   const saved = localStorage.getItem(NAME_KEY);
   const el = document.getElementById('nameDisplay');
