@@ -3,100 +3,95 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tic-Tac-Shuffle: Sultan Edition</title>
+<title>Tic-Tac-Shuffle: Dungeon Edition</title>
 <script src="https://unpkg.com/@instantdb/core@0.14.7/dist/index.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap');
 
 :root {
-    --bg: #0e0c09;
-    --surface: #171410;
-    --surface2: #1e1a14;
-    --border: #2e2820;
-    --border2: #3d3528;
-    --gold: #c8a84b;
-    --gold2: #e8c96a;
-    --gold-dim: #7a6530;
-    --ivory: #f0ead8;
-    --slate: #2a2d3e;
-    --slate2: #3a3f58;
-    --red: #a84040;
-    --green: #4a8a50;
-    --text: #d8d0c0;
-    --muted: #6a6050;
-    --valid: rgba(200,168,75,0.15);
-    --valid-b: rgba(200,168,75,0.5);
-    --selected-b: rgba(200,168,75,0.8);
+  --bg: #0a0908;
+  --surface: #12100e;
+  --surface2: #1a1713;
+  --border: #2a241e;
+  --border2: #3a3228;
+  --gold: #c8a84b;
+  --gold2: #e8c96a;
+  --gold-dim: #7a6530;
+  --text: #d8d0c0;
+  --muted: #6a6050;
+  --red: #8b0000;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Crimson Pro', serif;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px 12px 40px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Crimson Pro', serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 12px;
+  background-image: radial-gradient(circle at center, #1a1713 0%, #0a0908 100%);
 }
 
+header { text-align: center; margin-bottom: 20px; }
 header h1 {
-    font-family: 'Cinzel', serif;
-    font-size: clamp(1.6rem, 6vw, 2.8rem);
-    color: var(--gold);
-    text-align: center;
+  font-family: 'Cinzel', serif;
+  font-size: clamp(1.5rem, 5vw, 2.5rem);
+  color: var(--gold);
+  text-shadow: 0 0 20px rgba(0,0,0,1);
 }
+.version-tag { font-size: 0.6rem; color: var(--muted); letter-spacing: 0.2em; margin-top: 5px; }
 
 /* ── THE WOODEN BOARD ── */
-.board {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    grid-template-rows: repeat(5, 1fr);
-    gap: 0;
-    background: #2e2820;
-    border: 4px solid #1e1a14;
-    width: min(350px, 85vw);
-    height: min(350px, 85vw);
-    box-shadow: 0 12px 50px rgba(0,0,0,0.8);
-    margin: 0 auto;
+#board-container {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  gap: 0;
+  background: #2e2820;
+  border: 6px solid #1a1713;
+  width: min(380px, 92vw);
+  height: min(380px, 92vw);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.9);
+  position: relative;
 }
 
 .cell {
-    background-image: url('WoodTable.png');
-    background-size: 500% 500%;
-    background-repeat: no-repeat;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    position: relative;
-    background-position: 50% 50%; /* Middle tile default */
+  background-image: url('WoodTable.png');
+  background-size: 500% 500%;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background-position: 50% 50%; /* Center tile by default */
 }
 
-/* 9-Slice Border Mapping */
+/* 9-Slice CSS Mapping */
 .cell.top-row { background-position-y: 0% !important; }
 .cell.bot-row { background-position-y: 100% !important; }
 .cell.left-col { background-position-x: 0% !important; }
 .cell.right-col { background-position-x: 100% !important; }
 
-/* ── THE ANIMATED PIECES ── */
+/* ── ANIMATED PIECES ── */
 @keyframes idle-anim {
-    from { background-position: 0%; }
-    to { background-position: 100%; }
+  from { background-position: 0%; }
+  to { background-position: 100%; }
 }
 
 .piece {
-    width: 90%;
-    height: 90%;
-    background-size: auto 100%;
-    image-rendering: pixelated;
-    animation: idle-anim 1s steps(6) infinite;
-    transition: transform 0.2s;
+  width: 85%;
+  height: 85%;
+  background-size: auto 100%;
+  image-rendering: pixelated;
+  animation: idle-anim 1s steps(6) infinite;
+  pointer-events: none;
 }
 
-/* Match the logic used in your JS for piece types */
+/* Mapping Piece Types to your PNGs */
 .piece.W_K { background-image: url('Warrior_Idle_Y.png'); }
 .piece.W_R { background-image: url('Monk_Idle_Y.png'); }
 .piece.W_B { background-image: url('Lancer_Idle_Y.png'); }
@@ -106,30 +101,80 @@ header h1 {
 
 .flipped { transform: scaleX(-1); }
 
-/* Keep your existing UI classes (trimmed for brevity but included in full) */
-.setup-screen, .side-panel, .panel-box, .btn, .opt-btn { /* styles from your original file */ }
+/* --- SELECTION & VALID MOVES --- */
+.cell.valid::after {
+  content: '';
+  width: 12px; height: 12px;
+  background: var(--gold);
+  border-radius: 50%;
+  opacity: 0.4;
+}
+.cell.selected-cell { background-color: rgba(200,168,75,0.2); box-shadow: inset 0 0 15px var(--gold); }
+
+/* --- SETUP SCREEN --- */
+.setup-screen {
+  background: var(--surface);
+  padding: 30px;
+  border: 1px solid var(--border2);
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+}
+
+.hidden { display: none !important; }
+.btn-start {
+  margin-top: 20px;
+  padding: 12px 24px;
+  background: var(--gold);
+  color: black;
+  border: none;
+  font-family: 'Cinzel', serif;
+  font-weight: bold;
+  cursor: pointer;
+  width: 100%;
+}
 </style>
 </head>
 <body>
-    <script>
-// --- GAME STATE ---
-let board = Array(25).fill(null);
-let G = { mode: 'casual', difficulty: 'easy', gameOver: false, winner: null };
-// ... all your original JS variables ...
 
-function startGame(mode) {
-    G.mode = mode;
+<header>
+  <h1>Tic-Tac-Shuffle</h1>
+  <div class="version-tag">DUNGEON EDITION v.01</div>
+</header>
+
+<div id="setup" class="setup-screen">
+  <h2 style="font-family: 'Cinzel'; margin-bottom: 20px;">Enter the Dungeon</h2>
+  <button class="btn-start" onclick="initGame('rated')">START RATED MATCH</button>
+  <p style="font-size: 0.7rem; color: var(--muted); margin-top: 10px;">Results will be recorded in the cloud</p>
+</div>
+
+<div id="game-ui" class="hidden">
+  <div id="board-container"></div>
+  <div id="status" style="margin-top: 20px; text-align: center; font-family: 'Cinzel'; color: var(--gold);">
+    Turn: <span id="turn-display">White</span>
+  </div>
+</div>
+
+<script>
+// --- CORE GAME ENGINE ---
+let board = Array(25).fill(null);
+let playerSide = 'white';
+let currentTurn = 'white';
+let moveHistory = [];
+
+// Initialize the 5x5 board
+function initGame(mode) {
     document.getElementById('setup').classList.add('hidden');
-    document.getElementById('game').classList.remove('hidden');
+    document.getElementById('game-ui').classList.remove('hidden');
     
-    // Board Generation Logic
-    const boardEl = document.getElementById('board');
-    boardEl.innerHTML = '';
+    const container = document.getElementById('board-container');
+    container.innerHTML = '';
+    
     for (let i = 0; i < 25; i++) {
         const cell = document.createElement('div');
         cell.className = 'cell';
         
-        // Wood Table logic
+        // 9-slice mapping logic
         const x = i % 5;
         const y = Math.floor(i / 5);
         if (y === 0) cell.classList.add('top-row');
@@ -137,10 +182,27 @@ function startGame(mode) {
         if (x === 0) cell.classList.add('left-col');
         if (x === 4) cell.classList.add('right-col');
         
-        cell.onclick = () => handleCellClick(i);
-        boardEl.appendChild(cell);
+        cell.dataset.index = i;
+        cell.onclick = () => handleMove(i);
+        container.appendChild(cell);
     }
+    
+    // Set up initial pieces (Simplified for Dungeon Edition)
+    // White pieces (Bottom)
+    setupPiece(20, 'white', 'B'); // Lancer
+    setupPiece(22, 'white', 'K'); // Warrior
+    setupPiece(24, 'white', 'R'); // Monk
+    
+    // Black pieces (Top)
+    setupPiece(0, 'black', 'R');
+    setupPiece(2, 'black', 'K');
+    setupPiece(4, 'black', 'B');
+    
     render();
+}
+
+function setupPiece(idx, side, type) {
+    board[idx] = { side, type };
 }
 
 function render() {
@@ -149,37 +211,37 @@ function render() {
         cells[i].innerHTML = '';
         if (p) {
             const el = document.createElement('div');
-            // Mapping pieces to sprites: e.g. W_K (White King/Warrior)
             el.className = `piece ${p.side === 'white' ? 'W' : 'B'}_${p.type}`;
-            if (p.side === 'black') el.classList.add('flipped'); 
+            if (p.side === 'black') el.classList.add('flipped');
             cells[i].appendChild(el);
         }
     });
+    document.getElementById('turn-display').innerText = currentTurn.toUpperCase();
 }
 
-function checkGameOver() {
-    // ... your existing check logic ...
-    if (G.gameOver) {
-        syncVictoryToCloud(); // NEW HOOK
-        showWinOverlay();
-    }
+// Placeholder for game logic
+function handleMove(idx) {
+    console.log("Clicked cell", idx);
+    // Move logic would go here
+    // For now, let's just trigger render
+    render();
 }
 
-// --- INSTANT DB CLOUD LOGIC ---
-const db = InstantDB.init({ appId: "9472496a-1981-4a67-aef4-452479972da2" });
+// --- CLOUD SYNC ---
+const db = InstantDB.init({ appId: "YOUR_APP_ID" }); 
 
-function syncVictoryToCloud() {
-    if (G.mode !== 'rated' || !G.gameOver || G.winner === 'draw') return;
-    const name = localStorage.getItem('player_name') || 'Sultan';
+function syncVictoryToCloud(winner) {
+    const playerName = localStorage.getItem('player_name') || 'Dungeon Crawler';
     db.transact(
         db.tx.scores[InstantDB.id()].update({
-            username: name,
-            difficulty: G.difficulty,
-            moves: moveHistory.length,
+            username: playerName,
+            edition: 'Dungeon v.01',
+            winner: winner,
             timestamp: Date.now()
         })
     );
 }
+
 </script>
 </body>
 </html>
