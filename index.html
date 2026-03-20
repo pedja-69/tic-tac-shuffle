@@ -3,32 +3,40 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TicTacShuffle">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0e0c09">
+<link rel="manifest" href="#" id="manifestLink">
 <title>Tic-Tac-Shuffle</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap');
 
 :root {
-  --bg:       #0e0c09;
-  --surface:  #171410;
-  --surface2: #1e1a14;
-  --border:   #2e2820;
-  --border2:  #3d3528;
-  --gold:     #c8a84b;
-  --gold2:    #e8c96a;
-  --gold-dim: #7a6530;
-  --ivory:    #f0ead8;
-  --slate:    #2a2d3e;
-  --slate2:   #3a3f58;
-  --red:      #a84040;
-  --green:    #4a8a50;
-  --text:     #d8d0c0;
-  --muted:    #6a6050;
+  --bg:         #0e0c09;
+  --surface:    #171410;
+  --surface2:   #1e1a14;
+  --border:     #2e2820;
+  --border2:    #3d3528;
+  --gold:       #c8a84b;
+  --gold2:      #e8c96a;
+  --gold-dim:   #7a6530;
+  --ivory:      #f0ead8;
+  --slate:      #2a2d3e;
+  --slate2:     #3a3f58;
+  --red:        #a84040;
+  --green:      #4a8a50;
+  --text:       #d8d0c0;
+  --muted:      #6a6050;
+  --slide-dur:  320ms;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-html, body {
-  width: 100%; height: 100%;
+html {
+  height: 100%;
+  /* Attempt to hide browser chrome on scroll-less pages */
   overflow: hidden;
 }
 
@@ -36,91 +44,153 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: 'Crimson Pro', Georgia, serif;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  position: fixed; /* Prevents bounce/scroll that reveals browser chrome */
+  inset: 0;
+  background-image:
+    radial-gradient(ellipse at 20% 0%,   rgba(200,168,75,0.06) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 100%, rgba(200,168,75,0.04) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 50%,  rgba(200,168,75,0.02) 0%, transparent 70%);
+}
+
+/* ══════════════════════════════════════════════
+   SCREEN MANAGER
+   All screens live inside #app. Only one is
+   visible at a time. Slide transitions swap them.
+══════════════════════════════════════════════ */
+#app {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.screen {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  min-height: 100vh;
-  min-height: 100dvh;
-  background-image:
-    radial-gradient(ellipse at 20% 0%, rgba(200,168,75,0.06) 0%, transparent 55%),
-    radial-gradient(ellipse at 80% 100%, rgba(200,168,75,0.04) 0%, transparent 55%),
-    radial-gradient(ellipse at 50% 50%, rgba(200,168,75,0.02) 0%, transparent 70%);
+  padding: 0 24px;
+  /* Start off-screen to the right (except #s-menu which starts active) */
+  transform: translateX(100%);
+  transition: transform var(--slide-dur) cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+.screen.active {
+  transform: translateX(0%);
+}
+.screen.exit-left {
+  transform: translateX(-30%); /* Depth effect: exiting screen slides slightly left */
 }
 
-/* ── SCREEN WRAPPER ── */
-.screen {
+/* ══════════════════════════════════════════════
+   MAIN MENU SCREEN
+══════════════════════════════════════════════ */
+#s-menu {
+  transform: translateX(0%); /* Default active */
+}
+
+/* ── Background reveal layer ── */
+#bg-reveal {
+  position: fixed;
+  inset: 0;
+  background: var(--bg) center/cover no-repeat;
+  /* Placeholder gradient; swap background-image for a real image URL later */
+  background-image:
+    linear-gradient(to bottom, rgba(14,12,9,0.1) 0%, rgba(14,12,9,0.75) 100%),
+    radial-gradient(ellipse at 50% 30%, #2a1f0e 0%, #0e0c09 70%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+  z-index: 0;
+}
+#bg-reveal.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+/* Dim the menu content when bg is showing */
+#menu-content {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  max-width: 420px;
-  height: 100vh;
-  height: 100dvh;
+  height: 100%;
   padding: 0 24px;
-  position: relative;
+  transition: opacity 0.4s ease;
 }
+#menu-content.dimmed { opacity: 0; pointer-events: none; }
 
-/* ── TOP SECTION: title ── */
+/* Tap-to-dismiss hint on bg reveal */
+#bg-hint {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.18em;
+  color: var(--gold);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease 0.4s;
+  text-transform: uppercase;
+  z-index: 2;
+}
+#bg-reveal.visible ~ #bg-hint,
+#bg-hint.visible { opacity: 0.7; }
+
+/* ── TOP SECTION ── */
 .top-section {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: clamp(32px, 8vh, 64px);
-  gap: 0;
+  padding-top: clamp(28px, 7vh, 60px);
 }
 
-.title-lockup {
-  text-align: center;
-}
-
-/* Decorative corner marks around the title */
 .title-frame {
   position: relative;
   display: inline-block;
   padding: 18px 28px 14px;
+  cursor: pointer;
+  user-select: none;
 }
-.title-frame::before,
-.title-frame::after {
+.title-frame::before, .title-frame::after {
   content: '';
   position: absolute;
   width: 14px; height: 14px;
   border-color: var(--gold-dim);
   border-style: solid;
   opacity: 0.6;
+  transition: opacity 0.2s, border-color 0.2s;
 }
-.title-frame::before {
-  top: 0; left: 0;
-  border-width: 1px 0 0 1px;
-}
-.title-frame::after {
-  bottom: 0; right: 0;
-  border-width: 0 1px 1px 0;
-}
-/* Inner corners via a pseudo wrapper */
-.title-frame-inner {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-.title-frame-inner::before,
-.title-frame-inner::after {
+.title-frame:hover::before, .title-frame:hover::after { opacity: 1; border-color: var(--gold); }
+.title-frame::before { top: 0; left: 0;  border-width: 1px 0 0 1px; }
+.title-frame::after  { bottom: 0; right: 0; border-width: 0 1px 1px 0; }
+.title-frame-inner { position: absolute; inset: 0; pointer-events: none; }
+.title-frame-inner::before, .title-frame-inner::after {
   content: '';
   position: absolute;
   width: 14px; height: 14px;
   border-color: var(--gold-dim);
   border-style: solid;
   opacity: 0.6;
+  transition: opacity 0.2s, border-color 0.2s;
 }
-.title-frame-inner::before {
-  top: 0; right: 0;
-  border-width: 1px 1px 0 0;
-}
-.title-frame-inner::after {
-  bottom: 0; left: 0;
-  border-width: 0 0 1px 1px;
-}
+.title-frame:hover .title-frame-inner::before,
+.title-frame:hover .title-frame-inner::after { opacity: 1; border-color: var(--gold); }
+.title-frame-inner::before { top: 0; right: 0;  border-width: 1px 1px 0 0; }
+.title-frame-inner::after  { bottom: 0; left: 0; border-width: 0 0 1px 1px; }
 
 h1 {
   font-family: 'Cinzel', serif;
@@ -128,9 +198,7 @@ h1 {
   font-size: clamp(1.9rem, 8vw, 2.6rem);
   letter-spacing: 0.06em;
   color: var(--gold);
-  text-shadow:
-    0 0 60px rgba(200,168,75,0.35),
-    0 0 20px rgba(200,168,75,0.2);
+  text-shadow: 0 0 60px rgba(200,168,75,0.35), 0 0 20px rgba(200,168,75,0.2);
   line-height: 1.1;
   animation: titleGlow 3s ease-in-out infinite alternate;
 }
@@ -146,32 +214,30 @@ h1 {
   color: var(--muted);
   text-transform: uppercase;
   margin-top: 6px;
+  text-align: center;
 }
-
 .tagline {
   font-style: italic;
   font-size: clamp(0.8rem, 3vw, 0.95rem);
   color: var(--muted);
   letter-spacing: 0.04em;
-  margin-top: 10px;
+  margin-top: 8px;
   opacity: 0.8;
+  text-align: center;
 }
-
 .divider {
-  width: 100px;
-  height: 1px;
+  width: 100px; height: 1px;
   background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
-  margin: 14px auto 0;
+  margin: 12px auto 0;
 }
 
-/* ── MIDDLE SECTION: nav buttons ── */
+/* ── MID SECTION: nav buttons ── */
 .mid-section {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 10px;
   width: 100%;
-  padding: 0 0 8px;
 }
 
 .menu-btn {
@@ -193,7 +259,6 @@ h1 {
   position: relative;
   overflow: hidden;
 }
-/* Subtle inner border */
 .menu-btn::before {
   content: '';
   position: absolute;
@@ -204,7 +269,7 @@ h1 {
   opacity: 0;
   transition: opacity 0.18s;
 }
-.menu-btn:hover::before { opacity: 1; }
+.menu-btn:hover::before, .menu-btn:active::before { opacity: 1; }
 .menu-btn:hover {
   border-color: var(--gold-dim);
   color: var(--gold);
@@ -212,19 +277,14 @@ h1 {
   transform: translateY(-1px);
   box-shadow: 0 4px 20px rgba(0,0,0,0.4);
 }
-.menu-btn:active {
-  transform: translateY(0px);
-  filter: brightness(0.9);
-}
+.menu-btn:active { transform: translateY(0); filter: brightness(0.9); }
 
-/* Primary button: New Game */
 .menu-btn-primary {
   background: linear-gradient(135deg, #7a5e1e 0%, #c8a84b 50%, #7a5e1e 100%);
   border: none;
   color: #0e0c09;
   box-shadow: 0 2px 16px rgba(200,168,75,0.2);
 }
-.menu-btn-primary::before { border-color: rgba(255,255,255,0.15); }
 .menu-btn-primary:hover {
   color: #0e0c09;
   background: linear-gradient(135deg, #8a6e2a 0%, #e8c96a 50%, #8a6e2a 100%);
@@ -232,34 +292,32 @@ h1 {
   border: none;
 }
 
-/* Dimmed / locked button: Campaign */
 .menu-btn-locked {
-  opacity: 0.38;
+  opacity: 0.35;
   cursor: default;
   pointer-events: none;
 }
-.menu-btn-locked .lock-tag {
+.lock-tag {
   font-family: 'Crimson Pro', serif;
   font-size: 0.65rem;
   font-weight: 400;
   font-style: italic;
   letter-spacing: 0.05em;
   color: var(--muted);
-  margin-left: 8px;
+  margin-left: 6px;
   text-transform: none;
 }
 
-/* ── BOTTOM SECTION: icon row ── */
+/* ── BOTTOM SECTION ── */
 .bottom-section {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 14px;
-  padding-bottom: clamp(20px, 5vh, 40px);
+  padding-bottom: clamp(18px, 4vh, 36px);
   width: 100%;
 }
 
-/* Name entry row */
 .name-row {
   display: flex;
   align-items: center;
@@ -274,14 +332,8 @@ h1 {
   transition: border-color 0.15s;
 }
 .name-row:hover { border-color: var(--gold-dim); }
-.name-row-icon {
-  font-size: 1.1rem;
-  opacity: 0.7;
-  flex-shrink: 0;
-}
-.name-row-text {
-  flex: 1;
-}
+.name-row-icon { font-size: 1.1rem; opacity: 0.7; flex-shrink: 0; }
+.name-row-text { flex: 1; }
 .name-row-label {
   font-family: 'Cinzel', serif;
   font-size: 0.58rem;
@@ -291,117 +343,187 @@ h1 {
   display: block;
   margin-bottom: 2px;
 }
-.name-row-value {
-  font-size: 0.88rem;
-  color: var(--gold);
-  font-style: italic;
-}
-.name-row-value.placeholder {
-  color: var(--muted);
-  font-style: italic;
-}
-
-/* Name input (hidden by default) */
-.name-input-wrap {
-  display: none;
-  width: 100%;
-  max-width: 300px;
-  gap: 6px;
-}
-.name-input-wrap.open { display: flex; }
-.name-input {
-  flex: 1;
-  background: var(--surface2);
-  border: 1px solid var(--border2);
-  border-radius: 2px;
-  color: var(--text);
-  font-family: 'Crimson Pro', serif;
-  font-size: 0.9rem;
-  padding: 8px 10px;
-  outline: none;
-  transition: border-color 0.12s;
-}
-.name-input:focus { border-color: var(--gold-dim); }
-.name-save {
-  background: transparent;
-  border: 1px solid var(--gold-dim);
-  border-radius: 2px;
-  color: var(--gold);
-  font-family: 'Crimson Pro', serif;
-  font-size: 0.82rem;
-  padding: 8px 14px;
-  cursor: pointer;
-  transition: background 0.12s;
-  white-space: nowrap;
-}
-.name-save:hover { background: rgba(200,168,75,0.1); }
+.name-row-value { font-size: 0.88rem; color: var(--gold); font-style: italic; }
+.name-row-value.placeholder { color: var(--muted); }
 
 /* Icon strip */
 .icon-strip {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 28px;
 }
 .icon-btn {
   background: transparent;
   border: none;
   color: var(--muted);
-  font-size: 1.3rem;
   cursor: pointer;
   padding: 6px;
   transition: color 0.15s, transform 0.15s;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
 }
 .icon-btn:hover { color: var(--gold); transform: scale(1.12); }
-.icon-btn span {
+.icon-btn .ib-icon { font-size: 1.25rem; line-height: 1; display: block; }
+.icon-btn .ib-label {
   font-size: 0.55rem;
   font-family: 'Cinzel', serif;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: inherit;
 }
 
-/* Version tag */
-.version-tag {
-  font-size: 0.6rem;
+/* Language flag button */
+.lang-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  cursor: pointer;
+  padding: 4px 7px;
+  transition: border-color 0.15s, transform 0.15s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
   color: var(--muted);
-  opacity: 0.5;
+}
+.lang-btn:hover { border-color: var(--gold-dim); transform: scale(1.08); }
+.lang-btn .ib-icon { font-size: 1.3rem; line-height: 1; display: block; }
+.lang-btn .ib-label {
+  font-size: 0.55rem;
   font-family: 'Cinzel', serif;
-  letter-spacing: 0.12em;
-  margin-top: 4px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: inherit;
+}
+
+.version-tag {
+  font-size: 0.58rem;
+  color: var(--muted);
+  opacity: 0.45;
+  font-family: 'Cinzel', serif;
+  letter-spacing: 0.1em;
+}
+
+/* ── PWA Install Banner ── */
+#install-banner {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--border2);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  z-index: 50;
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+}
+#install-banner.show { transform: translateY(0); }
+.install-text {
+  font-size: 0.78rem;
+  color: var(--text);
+  line-height: 1.4;
+  flex: 1;
+}
+.install-text strong {
+  font-family: 'Cinzel', serif;
+  font-size: 0.72rem;
+  color: var(--gold);
+  letter-spacing: 0.06em;
+  display: block;
+  margin-bottom: 2px;
+}
+.install-btn {
+  background: linear-gradient(135deg, #7a5e1e, #c8a84b, #7a5e1e);
+  border: none;
+  border-radius: 2px;
+  color: #0e0c09;
+  font-family: 'Cinzel', serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 8px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.install-dismiss {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 4px;
 }
 
 /* ── ENTRANCE ANIMATION ── */
-.screen > * {
-  animation: fadeUp 0.5s ease both;
-}
-.top-section    { animation-delay: 0.05s; }
-.mid-section    { animation-delay: 0.15s; }
-.bottom-section { animation-delay: 0.25s; }
+#s-menu .top-section    { animation: fadeUp 0.45s ease 0.05s both; }
+#s-menu .mid-section    { animation: fadeUp 0.45s ease 0.15s both; }
+#s-menu .bottom-section { animation: fadeUp 0.45s ease 0.25s both; }
 
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(16px); }
+  from { opacity: 0; transform: translateY(14px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── NAME MODAL ── */
+/* ══════════════════════════════════════════════
+   PLACEHOLDER SCREENS (Difficulty, Side Select…)
+   Each will be fleshed out in later steps.
+   They live here as stubs so the slide system works.
+══════════════════════════════════════════════ */
+.screen-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 20px;
+  color: var(--muted);
+  font-family: 'Cinzel', serif;
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+}
+.screen-placeholder .ph-title {
+  color: var(--gold);
+  font-size: 1.1rem;
+  letter-spacing: 0.14em;
+}
+
+/* Back button shared style */
+.back-btn {
+  position: absolute;
+  top: max(16px, env(safe-area-inset-top, 16px));
+  left: 20px;
+  background: transparent;
+  border: 1px solid var(--border2);
+  border-radius: 2px;
+  color: var(--muted);
+  font-family: 'Cinzel', serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  padding: 7px 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  z-index: 10;
+}
+.back-btn:hover { border-color: var(--gold-dim); color: var(--gold); }
+
+/* ══════════════════════════════════════════════
+   MODAL — Name entry
+══════════════════════════════════════════════ */
 .modal-overlay {
   position: fixed; inset: 0;
   background: rgba(0,0,0,0.82);
   display: flex; align-items: center; justify-content: center;
-  z-index: 100;
+  z-index: 200;
   backdrop-filter: blur(4px);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s;
 }
-.modal-overlay.open {
-  opacity: 1;
-  pointer-events: all;
-}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
 .modal-box {
   background: var(--surface);
   border: 1px solid var(--border2);
@@ -410,7 +532,7 @@ h1 {
   width: min(340px, 90vw);
   position: relative;
   transform: translateY(12px);
-  transition: transform 0.2s;
+  transition: transform 0.22s ease;
 }
 .modal-overlay.open .modal-box { transform: translateY(0); }
 .modal-box::before {
@@ -447,7 +569,7 @@ h1 {
   font-size: 1rem;
   padding: 10px 12px;
   outline: none;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
   transition: border-color 0.12s;
   text-align: center;
 }
@@ -461,10 +583,7 @@ h1 {
   line-height: 1.4;
   opacity: 0.75;
 }
-.modal-btn-row {
-  display: flex;
-  gap: 8px;
-}
+.modal-btn-row { display: flex; gap: 8px; }
 .modal-btn {
   flex: 1;
   background: transparent;
@@ -482,76 +601,162 @@ h1 {
 .modal-btn:hover { border-color: var(--gold-dim); color: var(--text); }
 .modal-btn-gold {
   background: linear-gradient(135deg, #7a5e1e, #c8a84b, #7a5e1e);
-  border: none;
-  color: #0e0c09;
-  font-weight: 700;
+  border: none; color: #0e0c09; font-weight: 700;
 }
 .modal-btn-gold:hover { filter: brightness(1.1); color: #0e0c09; }
-
 </style>
 </head>
 <body>
 
-<div class="screen">
+<div id="app">
 
-  <!-- ── TOP: Title ── -->
-  <div class="top-section">
-    <div class="title-lockup">
-      <div class="title-frame">
-        <div class="title-frame-inner"></div>
-        <h1>Tic-Tac-Shuffle</h1>
+  <!-- ══════════════════════════════
+       SCREEN 1: MAIN MENU
+  ══════════════════════════════ -->
+  <div class="screen active" id="s-menu">
+
+    <!-- Background reveal layer (behind content) -->
+    <div id="bg-reveal"></div>
+
+    <div id="menu-content">
+
+      <!-- TOP: Title -->
+      <div class="top-section">
+        <div class="title-frame" id="titleFrame" onclick="toggleBg()" title="Tap to reveal background">
+          <div class="title-frame-inner"></div>
+          <h1>Tic&#8209;Tac&#8209;Shuffle</h1>
+        </div>
+        <div class="subtitle">Dance of the Blades</div>
+        <div class="tagline">a knife fight in a phone booth</div>
+        <div class="divider"></div>
       </div>
-      <div class="subtitle">Dance of the Blades</div>
-      <div class="tagline">a knife fight in a phone booth</div>
-      <div class="divider"></div>
-    </div>
-  </div>
 
-  <!-- ── MIDDLE: Nav buttons ── -->
-  <div class="mid-section">
-    <button class="menu-btn menu-btn-primary" onclick="goNewGame()">⚔ New Game</button>
-    <button class="menu-btn menu-btn-locked">
-      ✦ Campaign <span class="lock-tag">— coming soon</span>
-    </button>
-    <button class="menu-btn" onclick="goSettings()">⚙ Settings</button>
-    <button class="menu-btn" onclick="goHallOfFame()">🏆 Hall of Fame</button>
-    <button class="menu-btn" onclick="exitApp()" style="margin-top:6px; opacity:0.55; font-size:0.8rem; padding:11px 20px; letter-spacing:0.1em;">Exit</button>
-  </div>
-
-  <!-- ── BOTTOM: Icon strip + name ── -->
-  <div class="bottom-section">
-
-    <!-- Name row -->
-    <div class="name-row" onclick="openNameModal()" id="nameRow">
-      <div class="name-row-icon">🪶</div>
-      <div class="name-row-text">
-        <span class="name-row-label">Adventurer</span>
-        <span class="name-row-value placeholder" id="nameDisplay">Enter the Hall of Fame…</span>
+      <!-- MID: Nav buttons -->
+      <div class="mid-section">
+        <button class="menu-btn menu-btn-primary" onclick="slideTo('s-difficulty')">⚔ New Game</button>
+        <button class="menu-btn menu-btn-locked">
+          ✦ Campaign <span class="lock-tag">— coming soon</span>
+        </button>
+        <button class="menu-btn" onclick="slideTo('s-halloffame')">🏆 Hall of Fame</button>
       </div>
-    </div>
 
-    <!-- Icon strip -->
-    <div class="icon-strip">
-      <button class="icon-btn" onclick="shareGame()" title="Share">
-        <span>📤</span>
-        <span>Share</span>
-      </button>
-      <button class="icon-btn" onclick="goChangelog()" title="What's New">
-        <span>📜</span>
-        <span>News</span>
-      </button>
-      <button class="icon-btn" onclick="goSettings()" title="Settings">
-        <span>⚙</span>
-        <span>Settings</span>
-      </button>
-    </div>
+      <!-- BOTTOM: Name row + icon strip -->
+      <div class="bottom-section">
+        <div class="name-row" onclick="openNameModal()">
+          <div class="name-row-icon">🪶</div>
+          <div class="name-row-text">
+            <span class="name-row-label">Adventurer</span>
+            <span class="name-row-value placeholder" id="nameDisplay">Enter the Hall of Fame…</span>
+          </div>
+        </div>
 
-    <div class="version-tag">v1.1 · pedja-69.github.io/tic-tac-shuffle</div>
+        <div class="icon-strip">
+          <button class="icon-btn" onclick="shareGame()">
+            <span class="ib-icon">📤</span>
+            <span class="ib-label">Share</span>
+          </button>
+          <button class="icon-btn" onclick="slideTo('s-changelog')">
+            <span class="ib-icon">📜</span>
+            <span class="ib-label">News</span>
+          </button>
+          <button class="icon-btn" onclick="slideTo('s-settings')">
+            <span class="ib-icon">⚙</span>
+            <span class="ib-label">Settings</span>
+          </button>
+          <button class="lang-btn" id="langBtn" onclick="toggleLang()">
+            <span class="ib-icon" id="langFlag">🇬🇧</span>
+            <span class="ib-label" id="langLabel">EN</span>
+          </button>
+        </div>
+
+        <div class="version-tag">v1.1 · pedja-69.github.io/tic-tac-shuffle</div>
+      </div>
+
+    </div><!-- /menu-content -->
+
+    <!-- Tap to dismiss bg hint -->
+    <div id="bg-hint">Tap to return</div>
+
+  </div><!-- /s-menu -->
+
+
+  <!-- ══════════════════════════════
+       SCREEN 2: DIFFICULTY SELECT (stub)
+  ══════════════════════════════ -->
+  <div class="screen" id="s-difficulty">
+    <button class="back-btn" onclick="slideBack()">← Back</button>
+    <div class="screen-placeholder">
+      <div class="ph-title">⚔ Choose Your Opponent</div>
+      <div>Difficulty select — coming next</div>
+    </div>
   </div>
 
-</div>
 
-<!-- ── NAME MODAL ── -->
+  <!-- ══════════════════════════════
+       SCREEN 3: SIDE SELECT (stub)
+  ══════════════════════════════ -->
+  <div class="screen" id="s-sideselect">
+    <button class="back-btn" onclick="slideBack()">← Back</button>
+    <div class="screen-placeholder">
+      <div class="ph-title">Choose Your Side</div>
+      <div>Side select — coming next</div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════
+       SCREEN 4: GAME (stub)
+  ══════════════════════════════ -->
+  <div class="screen" id="s-game">
+    <button class="back-btn" onclick="slideBack()">← Back</button>
+    <div class="screen-placeholder">
+      <div class="ph-title">⚔ Battle</div>
+      <div>Game board — coming next</div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════
+       SCREEN: SETTINGS (stub)
+  ══════════════════════════════ -->
+  <div class="screen" id="s-settings">
+    <button class="back-btn" onclick="slideBack()">← Back</button>
+    <div class="screen-placeholder">
+      <div class="ph-title">⚙ Settings</div>
+      <div>Settings — coming soon</div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════
+       SCREEN: HALL OF FAME (stub)
+  ══════════════════════════════ -->
+  <div class="screen" id="s-halloffame">
+    <button class="back-btn" onclick="slideBack()">← Back</button>
+    <div class="screen-placeholder">
+      <div class="ph-title">🏆 Hall of Fame</div>
+      <div>Leaderboard — coming soon</div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════
+       SCREEN: CHANGELOG (stub)
+  ══════════════════════════════ -->
+  <div class="screen" id="s-changelog">
+    <button class="back-btn" onclick="slideBack()">← Back</button>
+    <div class="screen-placeholder">
+      <div class="ph-title">📜 What's New</div>
+      <div>Changelog — coming soon</div>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+
+<!-- ══════════════════════════════
+     MODAL: Name Entry
+══════════════════════════════ -->
 <div class="modal-overlay" id="nameModal">
   <div class="modal-box">
     <div class="modal-title">🪶 Enter the Hall of Fame</div>
@@ -567,18 +772,141 @@ h1 {
   </div>
 </div>
 
+
+<!-- ══════════════════════════════
+     PWA INSTALL BANNER
+══════════════════════════════ -->
+<div id="install-banner">
+  <div class="install-text">
+    <strong>Install the Game</strong>
+    Play fullscreen — no browser chrome
+  </div>
+  <button class="install-btn" id="installBtn">Install</button>
+  <button class="install-dismiss" onclick="dismissInstall()">✕</button>
+</div>
+
+
 <script>
+// ═══════════════════════════════════════════
+//  SCREEN MANAGER — slide left/right
+// ═══════════════════════════════════════════
+const screenHistory = [];
+
+function slideTo(targetId) {
+  const current = document.querySelector('.screen.active');
+  const target  = document.getElementById(targetId);
+  if (!target || current === target) return;
+
+  // Push to history so we can go back
+  screenHistory.push(current.id);
+
+  // Exit current to the left (depth effect)
+  current.classList.add('exit-left');
+  current.classList.remove('active');
+
+  // Enter target from the right
+  target.style.transform = 'translateX(100%)';
+  // Force reflow so the starting position registers
+  target.getBoundingClientRect();
+  target.classList.add('active');
+
+  // Clean up exit class after transition
+  const dur = parseInt(getComputedStyle(document.documentElement)
+    .getPropertyValue('--slide-dur')) || 320;
+  setTimeout(() => current.classList.remove('exit-left'), dur);
+}
+
+function slideBack() {
+  if (!screenHistory.length) return;
+  const prevId  = screenHistory.pop();
+  const current = document.querySelector('.screen.active');
+  const prev    = document.getElementById(prevId);
+  if (!prev) return;
+
+  // Current exits to the right
+  current.style.transition = 'none';
+  current.style.transform  = 'translateX(0%)';
+  current.getBoundingClientRect();
+  current.style.transition = '';
+  current.classList.remove('active');
+  current.style.transform  = 'translateX(100%)';
+
+  // Prev slides in from (slight) left
+  prev.style.transition = 'none';
+  prev.style.transform  = 'translateX(-30%)';
+  prev.getBoundingClientRect();
+  prev.style.transition = '';
+  prev.classList.add('active'); // transition kicks in → slides to 0
+}
+
+// Hardware back button / swipe-back on Android
+window.addEventListener('popstate', () => slideBack());
+
+// Push a state so popstate fires on back
+history.pushState({}, '');
+
+
+// ═══════════════════════════════════════════
+//  BACKGROUND REVEAL on title tap
+// ═══════════════════════════════════════════
+let bgVisible = false;
+const bgReveal   = document.getElementById('bg-reveal');
+const menuContent = document.getElementById('menu-content');
+const bgHint     = document.getElementById('bg-hint');
+
+function toggleBg() {
+  bgVisible = !bgVisible;
+  bgReveal.classList.toggle('visible', bgVisible);
+  menuContent.classList.toggle('dimmed', bgVisible);
+  bgHint.classList.toggle('visible', bgVisible);
+}
+
+// Tap on bg-reveal to dismiss
+bgReveal.addEventListener('click', () => {
+  if (bgVisible) toggleBg();
+});
+
+
+// ═══════════════════════════════════════════
+//  LANGUAGE TOGGLE
+// ═══════════════════════════════════════════
+const LANG_KEY = 'tts_lang';
+let lang = localStorage.getItem(LANG_KEY) || 'en';
+
+const LANG_DATA = {
+  en: { flag: '🇬🇧', label: 'EN', tagline: 'a knife fight in a phone booth' },
+  sr: { flag: '🇷🇸', label: 'SR', tagline: 'tuča noževima u telefonskoj govornici' }
+};
+
+function applyLang() {
+  const d = LANG_DATA[lang];
+  document.getElementById('langFlag').textContent  = d.flag;
+  document.getElementById('langLabel').textContent = d.label;
+  document.querySelector('.tagline').textContent   = d.tagline;
+}
+
+function toggleLang() {
+  lang = lang === 'en' ? 'sr' : 'en';
+  localStorage.setItem(LANG_KEY, lang);
+  applyLang();
+}
+
+applyLang();
+
+
+// ═══════════════════════════════════════════
+//  PLAYER NAME
+// ═══════════════════════════════════════════
 const NAME_KEY = 'tts_player_name';
 
-// Load saved name on start
-window.addEventListener('DOMContentLoaded', () => {
+function loadName() {
   const saved = localStorage.getItem(NAME_KEY);
+  const el = document.getElementById('nameDisplay');
   if (saved) {
-    const el = document.getElementById('nameDisplay');
     el.textContent = saved;
     el.classList.remove('placeholder');
   }
-});
+}
 
 function openNameModal() {
   const saved = localStorage.getItem(NAME_KEY) || '';
@@ -586,9 +914,11 @@ function openNameModal() {
   document.getElementById('nameModal').classList.add('open');
   setTimeout(() => document.getElementById('nameInput').focus(), 220);
 }
+
 function closeNameModal() {
   document.getElementById('nameModal').classList.remove('open');
 }
+
 function saveName() {
   const val = document.getElementById('nameInput').value.trim();
   if (!val) return;
@@ -599,29 +929,85 @@ function saveName() {
   closeNameModal();
 }
 
-// Close modal on backdrop click
 document.getElementById('nameModal').addEventListener('click', function(e) {
   if (e.target === this) closeNameModal();
 });
 
-// Placeholder navigation — these will wire to real screens later
-function goNewGame()    { alert('→ Difficulty Select screen (next step)'); }
-function goSettings()   { alert('→ Settings screen (coming)'); }
-function goHallOfFame() { alert('→ Hall of Fame screen (coming)'); }
-function goChangelog()  { alert('→ What\'s New (coming)'); }
 
-function exitApp() {
-  if (confirm('Leave the battlefield?')) window.close();
-}
-
+// ═══════════════════════════════════════════
+//  SHARE
+// ═══════════════════════════════════════════
 function shareGame() {
-  const url = 'https://pedja-69.github.io/tic-tac-shuffle';
+  const url  = 'https://pedja-69.github.io/tic-tac-shuffle';
+  const text = lang === 'sr'
+    ? 'Igraj Tic-Tac-Shuffle — tuča noževima u telefonskoj govornici!'
+    : 'Play Tic-Tac-Shuffle — a knife fight in a phone booth!';
   if (navigator.share) {
-    navigator.share({ title: 'Tic-Tac-Shuffle', text: 'A knife fight in a phone booth!', url });
+    navigator.share({ title: 'Tic-Tac-Shuffle', text, url });
   } else {
-    navigator.clipboard.writeText(url).then(() => alert('Link copied to clipboard.'));
+    navigator.clipboard.writeText(url)
+      .then(() => alert(lang === 'sr' ? 'Kopirano u clipboard.' : 'Link copied to clipboard.'));
   }
 }
+
+
+// ═══════════════════════════════════════════
+//  PWA: MANIFEST (injected inline as blob)
+// ═══════════════════════════════════════════
+const manifest = {
+  name: 'Tic-Tac-Shuffle',
+  short_name: 'TTS',
+  description: 'A knife fight in a phone booth',
+  start_url: '.',
+  display: 'fullscreen',
+  orientation: 'portrait',
+  background_color: '#0e0c09',
+  theme_color: '#0e0c09',
+  icons: [
+    { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
+    { src: 'icon-512.png', sizes: '512x512', type: 'image/png' }
+  ]
+};
+const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+document.getElementById('manifestLink').href = URL.createObjectURL(blob);
+
+
+// ═══════════════════════════════════════════
+//  PWA: INSTALL PROMPT
+// ═══════════════════════════════════════════
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Show install banner after a short delay
+  setTimeout(() => {
+    document.getElementById('install-banner').classList.add('show');
+  }, 2000);
+});
+
+document.getElementById('installBtn').addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  document.getElementById('install-banner').classList.remove('show');
+});
+
+function dismissInstall() {
+  document.getElementById('install-banner').classList.remove('show');
+  deferredPrompt = null;
+}
+
+window.addEventListener('appinstalled', () => {
+  document.getElementById('install-banner').classList.remove('show');
+});
+
+
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
+loadName();
 </script>
 </body>
 </html>
