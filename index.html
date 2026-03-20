@@ -462,8 +462,186 @@ h1 {
   padding: 4px;
 }
 
-/* ── ENTRANCE ANIMATION ── */
-#s-menu .top-section    { animation: fadeUp 0.45s ease 0.05s both; }
+/* ══════════════════════════════════════════════
+   DIFFICULTY SCREEN
+══════════════════════════════════════════════ */
+.diff-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding-top: clamp(52px, 11vh, 80px); /* room for back btn */
+  padding-bottom: clamp(20px, 4vh, 36px);
+  gap: 0;
+  justify-content: space-between;
+}
+
+.diff-header {
+  text-align: center;
+  width: 100%;
+  flex-shrink: 0;
+}
+.diff-title {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(1rem, 4.5vw, 1.3rem);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+.diff-sub {
+  font-style: italic;
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin-top: 5px;
+}
+
+/* 2-column grid, last card spans both */
+.diff-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  width: 100%;
+  max-width: 380px;
+  flex: 1;
+  align-content: center;
+  margin: 16px 0;
+}
+
+.diff-card {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  position: relative;
+  overflow: hidden;
+  /* Equal height cards */
+  aspect-ratio: 1 / 1.05;
+}
+.diff-card::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border: 1px solid transparent;
+  border-radius: 1px;
+  transition: border-color 0.18s;
+  pointer-events: none;
+}
+.diff-card:hover { border-color: var(--gold-dim); transform: translateY(-2px); }
+.diff-card:hover::before { border-color: var(--border); }
+.diff-card:active { transform: translateY(0); }
+
+.diff-card.selected {
+  border-color: var(--gold);
+  background: rgba(200,168,75,0.08);
+  box-shadow: 0 0 20px rgba(200,168,75,0.12), inset 0 0 20px rgba(200,168,75,0.04);
+}
+.diff-card.selected::before { border-color: var(--gold-dim); }
+
+.diff-card-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 12px 8px 10px;
+  gap: 6px;
+  text-align: center;
+}
+
+.diff-icon-placeholder {
+  font-size: clamp(1.6rem, 6vw, 2.2rem);
+  line-height: 1;
+  filter: grayscale(0.2);
+  transition: transform 0.18s;
+}
+.diff-card:hover .diff-icon-placeholder,
+.diff-card.selected .diff-icon-placeholder { transform: scale(1.12); }
+
+.diff-card-name {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(0.72rem, 2.8vw, 0.88rem);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--text);
+  text-transform: uppercase;
+  transition: color 0.18s;
+}
+.diff-card.selected .diff-card-name { color: var(--gold); }
+
+.diff-card-quote {
+  font-style: italic;
+  font-size: clamp(0.6rem, 2.2vw, 0.72rem);
+  color: var(--muted);
+  line-height: 1.4;
+  transition: color 0.18s;
+}
+.diff-card.selected .diff-card-quote { color: rgba(200,168,75,0.6); }
+
+/* Lich King — full width, horizontal layout */
+.diff-card-lich {
+  grid-column: 1 / -1;
+  aspect-ratio: auto;
+}
+.diff-card-inner-lich {
+  flex-direction: row !important;
+  justify-content: flex-start !important;
+  padding: 14px 20px !important;
+  gap: 16px !important;
+  text-align: left !important;
+}
+.diff-icon-lich {
+  font-size: clamp(1.8rem, 7vw, 2.4rem) !important;
+  flex-shrink: 0;
+}
+.diff-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Lich King selected — red tint instead of gold */
+.diff-card-lich.selected {
+  border-color: #8a3030;
+  background: rgba(168,64,64,0.08);
+  box-shadow: 0 0 20px rgba(168,64,64,0.12), inset 0 0 20px rgba(168,64,64,0.04);
+}
+.diff-card-lich.selected::before { border-color: #5a2020; }
+.diff-card-lich.selected .diff-card-name { color: #c06060; }
+.diff-card-lich.selected .diff-card-quote { color: rgba(192,96,96,0.6); }
+
+/* Continue button */
+.diff-continue-btn {
+  width: 100%;
+  max-width: 380px;
+  background: linear-gradient(135deg, #7a5e1e 0%, #c8a84b 50%, #7a5e1e 100%);
+  border: none;
+  border-radius: 2px;
+  color: #0e0c09;
+  font-family: 'Cinzel', serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  padding: 14px 20px;
+  cursor: pointer;
+  transition: all 0.18s;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.diff-continue-btn:hover {
+  filter: brightness(1.12);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 24px rgba(200,168,75,0.3);
+}
+.diff-continue-btn:active { transform: translateY(0); filter: brightness(0.95); }
+/* Red variant when Lich King is selected */
+.diff-continue-btn.lich-selected {
+  background: linear-gradient(135deg, #5a2020 0%, #a84040 50%, #5a2020 100%);
+  box-shadow: 0 2px 16px rgba(168,64,64,0.2);
+}
+
 #s-menu .mid-section    { animation: fadeUp 0.45s ease 0.15s both; }
 #s-menu .bottom-section { animation: fadeUp 0.45s ease 0.25s both; }
 
@@ -685,14 +863,71 @@ h1 {
 
 
   <!-- ══════════════════════════════
-       SCREEN 2: DIFFICULTY SELECT (stub)
+       SCREEN 2: DIFFICULTY SELECT
   ══════════════════════════════ -->
   <div class="screen" id="s-difficulty">
     <button class="back-btn" onclick="slideBack()">← Back</button>
-    <div class="screen-placeholder">
-      <div class="ph-title">⚔ Choose Your Opponent</div>
-      <div>Difficulty select — coming next</div>
-    </div>
+
+    <div class="diff-screen">
+
+      <div class="diff-header">
+        <div class="diff-title" id="diffTitle">Choose Your Opponent</div>
+        <div class="diff-sub" id="diffSub">Who dares enter the phone booth?</div>
+        <div class="divider" style="margin-top:10px"></div>
+      </div>
+
+      <div class="diff-grid">
+
+        <div class="diff-card selected" data-diff="peasant" onclick="selectDiff(this)">
+          <div class="diff-card-inner">
+            <div class="diff-icon-placeholder">👨‍🌾</div>
+            <div class="diff-card-name" data-en="Peasant" data-sr="Seljak">Peasant</div>
+            <div class="diff-card-quote" data-en='"I just got here. Which one is my piece?"' data-sr='"Tek sam stigao. Koja je moja figura?"'>"I just got here. Which one is my piece?"</div>
+          </div>
+        </div>
+
+        <div class="diff-card" data-diff="squire" onclick="selectDiff(this)">
+          <div class="diff-card-inner">
+            <div class="diff-icon-placeholder">🧑‍✈️</div>
+            <div class="diff-card-name" data-en="Squire" data-sr="Štitonoša">Squire</div>
+            <div class="diff-card-quote" data-en='"I&apos;ve watched this game twice. Maybe three times."' data-sr='"Gledao sam ovu igru dva puta. Možda tri."'>"I've watched this game twice. Maybe three times."</div>
+          </div>
+        </div>
+
+        <div class="diff-card" data-diff="knight" onclick="selectDiff(this)">
+          <div class="diff-card-inner">
+            <div class="diff-icon-placeholder">⚔️</div>
+            <div class="diff-card-name" data-en="Knight" data-sr="Vitez">Knight</div>
+            <div class="diff-card-quote" data-en='"I&apos;ve read the rulebook. Most of it."' data-sr='"Pročitao sam pravila. Većinu."'>"I've read the rulebook. Most of it."</div>
+          </div>
+        </div>
+
+        <div class="diff-card" data-diff="warlord" onclick="selectDiff(this)">
+          <div class="diff-card-inner">
+            <div class="diff-icon-placeholder">🪖</div>
+            <div class="diff-card-name" data-en="Warlord" data-sr="Ratni Gospodar">Warlord</div>
+            <div class="diff-card-quote" data-en='"I wrote the rulebook. The revised edition."' data-sr='"Napisao sam pravila. Revidiranu verziju."'>"I wrote the rulebook. The revised edition."</div>
+          </div>
+        </div>
+
+        <!-- Lich King spans full width -->
+        <div class="diff-card diff-card-lich" data-diff="lichking" onclick="selectDiff(this)">
+          <div class="diff-card-inner diff-card-inner-lich">
+            <div class="diff-icon-placeholder diff-icon-lich">💀</div>
+            <div class="diff-card-body">
+              <div class="diff-card-name" data-en="Lich King" data-sr="Kralj Ličeva">Lich King</div>
+              <div class="diff-card-quote" data-en='"I have time."' data-sr='"Imam vremena."'>"I have time."</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /diff-grid -->
+
+      <button class="diff-continue-btn" id="diffContinueBtn" onclick="slideTo('s-sideselect')">
+        <span id="diffContinueText">Continue</span> →
+      </button>
+
+    </div><!-- /diff-screen -->
   </div>
 
 
@@ -921,6 +1156,9 @@ const LANG_DATA = {
     modalCancel:     'Cancel',
     modalConfirm:    'Confirm',
     bgHint:          'Tap to return',
+    diffTitle:       'Choose Your Opponent',
+    diffSub:         'Who dares enter the phone booth?',
+    diffContinue:    'Continue',
   },
   sr: {
     flag:            '🇷🇸',
@@ -942,6 +1180,9 @@ const LANG_DATA = {
     modalCancel:     'Otkaži',
     modalConfirm:    'Potvrdi',
     bgHint:          'Tapni za povratak',
+    diffTitle:       'Izaberi protivnika',
+    diffSub:         'Ko se usuđuje ući u telefonsku govornicu?',
+    diffContinue:    'Nastavi',
   }
 };
 
@@ -973,7 +1214,21 @@ function applyLang() {
   document.getElementById('modalCancel').textContent  = d.modalCancel;
   document.getElementById('modalConfirm').textContent = d.modalConfirm;
   // Bg hint
-  document.getElementById('bg-hint').textContent      = d.bgHint;
+  document.getElementById('bg-hint').textContent = d.bgHint;
+
+  // Difficulty screen
+  if (document.getElementById('diffTitle')) {
+    document.getElementById('diffTitle').textContent  = d.diffTitle;
+    document.getElementById('diffSub').textContent    = d.diffSub;
+    document.getElementById('diffContinueText').textContent = d.diffContinue;
+    // Update card names and quotes from data attributes
+    document.querySelectorAll('.diff-card-name').forEach(el => {
+      if (el.dataset[lang]) el.textContent = el.dataset[lang];
+    });
+    document.querySelectorAll('.diff-card-quote').forEach(el => {
+      if (el.dataset[lang]) el.textContent = el.dataset[lang];
+    });
+  }
 }
 
 function toggleLang() {
@@ -986,8 +1241,22 @@ applyLang();
 
 
 // ═══════════════════════════════════════════
-//  PLAYER NAME
+//  DIFFICULTY SELECT
 // ═══════════════════════════════════════════
+let selectedDiff = 'peasant'; // default
+
+function selectDiff(card) {
+  // Deselect all
+  document.querySelectorAll('.diff-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  selectedDiff = card.dataset.diff;
+
+  // Lich King: red tint on continue button
+  const btn = document.getElementById('diffContinueBtn');
+  btn.classList.toggle('lich-selected', selectedDiff === 'lichking');
+}
+
+
 function loadName() {
   const saved = localStorage.getItem(NAME_KEY);
   const el = document.getElementById('nameDisplay');
