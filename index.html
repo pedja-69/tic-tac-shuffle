@@ -3369,8 +3369,12 @@ function evaluate(board, aiColor) {
   const wl=checkWin(board,aiColor), bl=checkWin(board,pl);
   if(wl) return 10000;
   if(bl) return -10000;
+  // Small random noise (0-1) to break ties between equal positions
+  // This prevents the AI always picking the exact same moves
+  const noise = Math.random() * 0.9;
   return alignScore(board,aiColor)-alignScore(board,pl)
-       + threatScore(board,aiColor)-threatScore(board,pl);
+       + threatScore(board,aiColor)-threatScore(board,pl)
+       + noise;
 }
 
 // ═══════════════════════════════════════════════════
@@ -3473,7 +3477,7 @@ function pickAIMove(board, reserve, aiColor, difficulty) {
     return pool[Math.floor(Math.random()*pool.length)];
   }
 
-  // ── MEDIUM: win, block, then smart piece selection + 1-move eval ──
+  // ── MEDIUM: win, block, then 2-ply minimax with randomised tie-breaking ──
   if(difficulty==='medium') {
     const win=findWin(aiColor,board,reserve);
     if(win) return win;
@@ -3485,20 +3489,18 @@ function pickAIMove(board, reserve, aiColor, difficulty) {
       });
       if(block) return block;
     }
-    // 1-move lookahead: score each action
-    let best=-Infinity, bestAct=null;
-    for(const act of acts) {
+    // 2-ply minimax — stronger than 1-move eval, less predictable
+    // Shuffle first so equal-scoring moves vary each game
+    const shuffled=[...acts].sort(()=>Math.random()-0.5);
+    let best=-Infinity, bestActs=[];
+    for(const act of shuffled) {
       const {board:nb,reserve:nr}=applyAction(board,reserve,act,aiColor);
-      const score=evaluate(nb,aiColor);
-      // Piece selection bonus: prefer deploying pieces that create more threats
-      let bonus=0;
-      if(act.kind==='place') {
-        if(act.type==='king') bonus+=1;   // king is flexible
-        if(act.type==='bishop') bonus+=2; // bishop often builds diagonals fast
-      }
-      if(score+bonus>best) { best=score+bonus; bestAct=act; }
+      const score=minimax(nb,nr,1,false,aiColor,-Infinity,Infinity);
+      if(score>best) { best=score; bestActs=[act]; }
+      else if(score===best) bestActs.push(act);
     }
-    return bestAct || acts[Math.floor(Math.random()*acts.length)];
+    // Pick randomly among best moves — avoids always doing the same thing
+    return bestActs[Math.floor(Math.random()*bestActs.length)];
   }
 
   // ── HARD: win, block, threat neutralization, 3-move minimax ──
@@ -5435,7 +5437,7 @@ function hofRenderList(wins, diff) {
     <div></div>
     <div>${isSr ? 'Ime' : 'Name'}</div>
     <div style="text-align:center">${isSr ? 'Pobede' : 'Wins'}</div>
-    <div style="text-align:center">${isSr ? 'Min.' : 'Best'}</div>
+    <div style="text-align:center" title="Fewest moves to win">${isSr ? 'Potezi' : 'Moves'}</div>
     <div style="text-align:right">${isSr ? 'Datum' : 'Date'}</div>
   </div>`;
 
@@ -5517,7 +5519,7 @@ function hofUpdateTabLabels() {
   const hofTitle = document.getElementById('hofTitle');
   if (hofTitle) hofTitle.textContent = (isSr ? '🏆 Kuća Slavnih' : '🏆 Hall of Fame');
   const hofSub = document.getElementById('hofSub');
-  if (hofSub) hofSub.textContent = isSr ? 'Top 10 pobeda' : 'Top 10 victories';
+  if (hofSub) hofSub.textContent = isSr ? 'Top 10 · Pobede · Najmanji broj poteza' : 'Top 10 · Wins · Fewest moves to win';
 }
 
 
