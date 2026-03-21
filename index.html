@@ -1,3 +1,24 @@
+<!--
+╔══════════════════════════════════════════════════════════════╗
+║           TIC-TAC-SHUFFLE — Dance of the Blades             ║
+║                                                              ║
+║  Game design : Predrag Stevanović                            ║
+║  Code        : Claude AI (Anthropic)                         ║
+║                                                              ║
+║  Version     : v56                                           ║
+║  Date        : 21 March 2026                                ║
+║  Repository  : pedja-69.github.io/tic-tac-shuffle           ║
+║                                                              ║
+║  Stack       : Vanilla HTML/CSS/JS · Single file · PWA      ║
+║  Backend     : InstantDB (Hall of Fame leaderboard)          ║
+╚══════════════════════════════════════════════════════════════╝
+
+  Screens:  Main Menu → Difficulty → Side Select → Game
+  Modals:   Win Sheet · Rules · History · Move Log · Changelog
+  AI:       5 levels — Peasant / Squire / Knight / Warlord / Lich King
+            Minimax + alpha-beta pruning (depth 1–5 by level)
+  i18n:     English / Serbian (EN/SR toggle)
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
