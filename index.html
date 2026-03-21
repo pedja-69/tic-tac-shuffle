@@ -262,72 +262,65 @@ h1 {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 4px;
   width: 100%;
 }
 
 .menu-btn {
   width: 100%;
-  max-width: 300px;
-  background: var(--surface);
-  border: 1px solid var(--border2);
-  border-radius: 2px;
-  color: var(--text);
-  font-family: 'Cinzel', serif;
-  font-size: 0.95rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  padding: 15px 20px;
+  max-width: 320px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  color: var(--ivory);
+  font-family: 'VT323', 'Courier New', monospace;
+  font-size: clamp(1.4rem, 5.5vw, 1.8rem);
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  padding: 12px 20px;
   cursor: pointer;
   transition: all 0.18s ease;
   text-align: center;
   text-transform: uppercase;
   position: relative;
-  overflow: hidden;
+  /* Text shadow for readability over background */
+  text-shadow: 0 2px 16px rgba(0,0,0,1), 1px 1px 0 #0e0c09, -1px -1px 0 #0e0c09;
 }
-.menu-btn::before {
-  content: '';
-  position: absolute;
-  inset: 2px;
-  border: 1px solid var(--border);
-  border-radius: 1px;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.18s;
-}
-.menu-btn:hover::before, .menu-btn:active::before { opacity: 1; }
+.menu-btn::before { display: none; }
 .menu-btn:hover {
-  border-color: var(--gold-dim);
   color: var(--gold);
-  background: rgba(200,168,75,0.06);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  transform: translateY(-2px);
+  text-shadow: 0 0 20px rgba(200,168,75,0.8), 0 2px 16px rgba(0,0,0,1);
 }
-.menu-btn:active { transform: translateY(0); filter: brightness(0.9); }
+.menu-btn:active { transform: translateY(0); }
 
+/* Primary — ⚔ New Game stays gold */
 .menu-btn-primary {
-  background: linear-gradient(135deg, #7a5e1e 0%, #c8a84b 50%, #7a5e1e 100%);
+  background: transparent;
   border: none;
-  color: #0e0c09;
-  box-shadow: 0 2px 16px rgba(200,168,75,0.2);
+  color: var(--gold);
+  text-shadow: 0 0 20px rgba(200,168,75,0.5), 0 2px 16px rgba(0,0,0,1), 1px 1px 0 #0e0c09;
+  box-shadow: none;
+  font-size: clamp(1.6rem, 6vw, 2rem);
 }
 .menu-btn-primary:hover {
-  color: #0e0c09;
-  background: linear-gradient(135deg, #8a6e2a 0%, #e8c96a 50%, #8a6e2a 100%);
-  box-shadow: 0 4px 28px rgba(200,168,75,0.35);
+  color: var(--gold2);
+  background: transparent;
   border: none;
+  text-shadow: 0 0 30px rgba(232,201,106,0.9), 0 2px 20px rgba(0,0,0,1);
+  box-shadow: none;
 }
 
 .menu-btn-locked {
-  opacity: 0.35;
+  opacity: 0.28;
   cursor: default;
   pointer-events: none;
 }
 .lock-tag {
-  font-family: 'Crimson Pro', serif;
-  font-size: 0.65rem;
+  font-family: 'VT323', monospace;
+  font-size: 0.9em;
   font-weight: 400;
-  font-style: italic;
+  font-style: normal;
   letter-spacing: 0.05em;
   color: var(--muted);
   margin-left: 6px;
@@ -361,6 +354,9 @@ h1 {
 .name-row-icon { font-size: 1.1rem; opacity: 0.7; flex-shrink: 0; }
 .name-row-text { flex: 1; }
 .name-row-label {
+  font-family: 'VT323', monospace;
+  font-size: 0.95rem;
+  letter-spacing: 0.1em;
   font-family: 'Cinzel', serif;
   font-size: 0.58rem;
   letter-spacing: 0.18em;
