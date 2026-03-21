@@ -5,7 +5,7 @@
 ║  Game design : Predrag Stevanović                            ║
 ║  Code        : Claude AI (Anthropic)                         ║
 ║                                                              ║
-║  Version     : v56                                           ║
+║  Version     : v57                                           ║
 ║  Date        : 21 March 2026                                ║
 ║  Repository  : pedja-69.github.io/tic-tac-shuffle           ║
 ║                                                              ║
@@ -1988,6 +1988,168 @@ h1 {
   transition: opacity 0.8s ease;
 }
 .tagline.fade-out { opacity: 0; }
+
+/* ══════════════════════════════════════════════
+   JRPG DIFFICULTY SCREEN
+══════════════════════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+.jrpg-screen {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  padding: clamp(28px,7vh,52px) 16px clamp(12px,3vh,24px);
+  gap: 0;
+}
+
+.jrpg-header {
+  text-align: center;
+  flex-shrink: 0;
+  margin-bottom: 12px;
+}
+.jrpg-title {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(0.9rem,4vw,1.2rem);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+
+/* Roster — three rows stacked */
+.jrpg-roster {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+
+/* Each enemy row */
+.jrpg-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  padding: 10px 10px 10px 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+.jrpg-row::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  transition: border-color 0.2s;
+  pointer-events: none;
+}
+.jrpg-row:hover { border-color: var(--gold-dim); }
+.jrpg-row:hover::before { border-color: var(--border); }
+.jrpg-row.selected {
+  border-color: var(--gold);
+  background: rgba(200,168,75,0.07);
+  box-shadow: 0 0 16px rgba(200,168,75,0.1);
+}
+.jrpg-row.selected::before { border-color: var(--gold-dim); }
+
+/* Lich row special */
+.jrpg-row[data-diff="lichking"] {
+  border-color: #3a2050;
+  background: rgba(60,20,80,0.15);
+}
+.jrpg-row[data-diff="lichking"]:hover { border-color: #7a40a0; }
+.jrpg-row[data-diff="lichking"].selected {
+  border-color: #9040c0;
+  background: rgba(90,20,120,0.15);
+  box-shadow: 0 0 20px rgba(144,64,192,0.2);
+}
+
+/* Speech area — left side */
+.jrpg-speech-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.jrpg-name-tag {
+  font-family: 'VT323', 'Courier New', monospace;
+  font-size: clamp(0.95rem,3.5vw,1.1rem);
+  color: var(--gold);
+  letter-spacing: 0.06em;
+  line-height: 1;
+}
+.jrpg-name-lich { color: #c080e0; }
+
+.jrpg-bubble {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  padding: 7px 10px;
+  min-height: 44px;
+  display: flex;
+  align-items: flex-start;
+  position: relative;
+}
+.jrpg-bubble-lich {
+  border-color: #4a2060;
+  background: rgba(40,10,60,0.4);
+}
+
+.jrpg-text {
+  font-family: 'VT323', 'Courier New', monospace;
+  font-size: clamp(1rem,3.8vw,1.15rem);
+  color: var(--text);
+  line-height: 1.35;
+  word-break: break-word;
+}
+.jrpg-bubble-lich .jrpg-text { color: #d0a0f0; }
+
+.jrpg-cursor {
+  font-family: 'VT323', monospace;
+  font-size: 1rem;
+  color: var(--gold);
+  animation: blink-cursor 0.7s step-end infinite;
+  flex-shrink: 0;
+  margin-left: 1px;
+  align-self: flex-end;
+  margin-bottom: 1px;
+}
+.jrpg-bubble-lich .jrpg-cursor { color: #c080e0; }
+.jrpg-cursor.hidden { visibility: hidden; }
+@keyframes blink-cursor {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0; }
+}
+
+/* Portrait — right side */
+.jrpg-portrait {
+  width: clamp(52px,16vw,72px);
+  height: clamp(52px,16vw,72px);
+  flex-shrink: 0;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  image-rendering: pixelated;
+}
+.jrpg-portrait svg { width: 100%; height: 100%; }
+.jrpg-portrait-lich { border-color: #4a2060; background: #1a0a28; }
+
+/* Selected highlight on portrait */
+.jrpg-row.selected .jrpg-portrait { border-color: var(--gold); }
+.jrpg-row[data-diff="lichking"].selected .jrpg-portrait { border-color: #9040c0; }
 </style>
 </head>
 <body>
@@ -2065,73 +2227,140 @@ h1 {
 
 
   <!-- ══════════════════════════════
-       SCREEN 2: DIFFICULTY SELECT
+       SCREEN 2: DIFFICULTY SELECT — JRPG style
   ══════════════════════════════ -->
   <div class="screen" id="s-difficulty">
+    <div class="jrpg-screen">
 
-    <div class="diff-screen">
-
-      <div class="diff-header">
-        <div class="diff-title" id="diffTitle">Choose Your Opponent</div>
-        <div class="diff-sub" id="diffSub">Who dares enter the phone booth?</div>
-        <div class="divider" style="margin-top:10px"></div>
+      <!-- Title -->
+      <div class="jrpg-header">
+        <div class="jrpg-title" id="diffTitle">Choose Your Opponent</div>
+        <div class="divider" style="margin-top:8px"></div>
       </div>
 
-      <div class="diff-grid">
+      <!-- Three enemy rows -->
+      <div class="jrpg-roster">
 
-        <div class="diff-card selected" data-diff="peasant" onclick="selectDiff(this)">
-          <div class="diff-card-inner">
-            <div class="diff-icon-placeholder">👨‍🌾</div>
-            <div class="diff-card-name" data-en="Peasant" data-sr="Seljak">Peasant</div>
-            <div class="diff-card-quote" data-en='"I just got here. Which one is my piece?"' data-sr='"Tek sam stigao. Koja je moja figura?"'>"I just got here. Which one is my piece?"</div>
+        <!-- Skeleton (Easy) -->
+        <div class="jrpg-row" id="jrpgRow0" data-diff="knight" onclick="jrpgSelect(0)">
+          <div class="jrpg-portrait" id="jrpgPortrait0">
+            <!-- Skeleton SVG placeholder -->
+            <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+              <!-- Skull -->
+              <ellipse cx="32" cy="24" rx="14" ry="16" fill="#c8c0b0" stroke="#6a5a4a" stroke-width="1.5"/>
+              <!-- Eyes -->
+              <ellipse cx="26" cy="22" rx="4" ry="5" fill="#1a1410"/>
+              <ellipse cx="38" cy="22" rx="4" ry="5" fill="#1a1410"/>
+              <!-- Nose -->
+              <ellipse cx="32" cy="29" rx="2" ry="1.5" fill="#1a1410"/>
+              <!-- Teeth -->
+              <rect x="24" y="35" width="4" height="5" rx="1" fill="#c8c0b0" stroke="#6a5a4a" stroke-width="1"/>
+              <rect x="30" y="35" width="4" height="5" rx="1" fill="#c8c0b0" stroke="#6a5a4a" stroke-width="1"/>
+              <rect x="36" y="35" width="4" height="5" rx="1" fill="#c8c0b0" stroke="#6a5a4a" stroke-width="1"/>
+              <!-- Jaw -->
+              <path d="M18 33 Q32 42 46 33" fill="none" stroke="#6a5a4a" stroke-width="1.5"/>
+              <!-- Neck bones -->
+              <rect x="28" y="40" width="8" height="6" rx="2" fill="#b8b0a0" stroke="#6a5a4a" stroke-width="1"/>
+              <!-- Crack -->
+              <path d="M32 10 L30 18 L33 22" fill="none" stroke="#8a7a6a" stroke-width="1" opacity="0.6"/>
+              <!-- Crown of darkness -->
+              <path d="M20 16 L18 8 L24 13 L32 6 L40 13 L46 8 L44 16" fill="none" stroke="#4a3a2a" stroke-width="1.5" opacity="0.5"/>
+            </svg>
           </div>
-        </div>
-
-        <div class="diff-card" data-diff="squire" onclick="selectDiff(this)">
-          <div class="diff-card-inner">
-            <div class="diff-icon-placeholder">🧑‍✈️</div>
-            <div class="diff-card-name" data-en="Squire" data-sr="Štitonoša">Squire</div>
-            <div class="diff-card-quote" data-en='"I&apos;ve watched this game twice. Maybe three times."' data-sr='"Gledao sam ovu igru dva puta. Možda tri."'>"I've watched this game twice. Maybe three times."</div>
-          </div>
-        </div>
-
-        <div class="diff-card" data-diff="knight" onclick="selectDiff(this)">
-          <div class="diff-card-inner">
-            <div class="diff-icon-placeholder">⚔️</div>
-            <div class="diff-card-name" data-en="Knight" data-sr="Vitez">Knight</div>
-            <div class="diff-card-quote" data-en='"I&apos;ve read the rulebook. Most of it."' data-sr='"Pročitao sam pravila. Većinu."'>"I've read the rulebook. Most of it."</div>
-          </div>
-        </div>
-
-        <div class="diff-card" data-diff="warlord" onclick="selectDiff(this)">
-          <div class="diff-card-inner">
-            <div class="diff-icon-placeholder">🪖</div>
-            <div class="diff-card-name" data-en="Warlord" data-sr="Ratni Gospodar">Warlord</div>
-            <div class="diff-card-quote" data-en='"I wrote the rulebook. The revised edition."' data-sr='"Napisao sam pravila. Revidiranu verziju."'>"I wrote the rulebook. The revised edition."</div>
-          </div>
-        </div>
-
-        <!-- Lich King spans full width -->
-        <div class="diff-card diff-card-lich" data-diff="lichking" onclick="selectDiff(this)">
-          <div class="diff-card-inner diff-card-inner-lich">
-            <div class="diff-icon-placeholder diff-icon-lich">💀</div>
-            <div class="diff-card-body">
-              <div class="diff-card-name" data-en="Lich King" data-sr="Kralj Ličeva">Lich King</div>
-              <div class="diff-card-quote" data-en='"I have time."' data-sr='"Imam vremena."'>"I have time."</div>
+          <div class="jrpg-speech-area">
+            <div class="jrpg-name-tag" id="jrpgName0">Skeleton</div>
+            <div class="jrpg-bubble" id="jrpgBubble0">
+              <span class="jrpg-text" id="jrpgText0"></span>
+              <span class="jrpg-cursor" id="jrpgCursor0">▮</span>
             </div>
           </div>
         </div>
 
-      </div><!-- /diff-grid -->
+        <!-- Dark Knight (Medium) -->
+        <div class="jrpg-row" id="jrpgRow1" data-diff="warlord" onclick="jrpgSelect(1)">
+          <div class="jrpg-portrait" id="jrpgPortrait1">
+            <!-- Dark Knight SVG placeholder -->
+            <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+              <!-- Helmet -->
+              <ellipse cx="32" cy="22" rx="15" ry="17" fill="#2a2830" stroke="#6a6080" stroke-width="1.5"/>
+              <!-- Visor slit -->
+              <rect x="22" y="21" width="20" height="4" rx="2" fill="#c8a84b" opacity="0.8"/>
+              <!-- Glowing eyes inside visor -->
+              <ellipse cx="27" cy="23" rx="2.5" ry="1.5" fill="#e8c060"/>
+              <ellipse cx="37" cy="23" rx="2.5" ry="1.5" fill="#e8c060"/>
+              <!-- Helmet crest -->
+              <path d="M26 8 L28 5 L32 8 L36 5 L38 8" fill="none" stroke="#8a8099" stroke-width="2"/>
+              <rect x="30" y="5" width="4" height="8" rx="1" fill="#4a4860" stroke="#6a6080" stroke-width="1"/>
+              <!-- Cheek guards -->
+              <path d="M17 20 Q16 28 20 36" fill="none" stroke="#4a4860" stroke-width="3" stroke-linecap="round"/>
+              <path d="M47 20 Q48 28 44 36" fill="none" stroke="#4a4860" stroke-width="3" stroke-linecap="round"/>
+              <!-- Neck armor -->
+              <rect x="24" y="37" width="16" height="8" rx="2" fill="#2a2830" stroke="#6a6080" stroke-width="1.5"/>
+              <!-- Shoulder plates hint -->
+              <ellipse cx="18" cy="42" rx="8" ry="5" fill="#2a2830" stroke="#6a6080" stroke-width="1.5"/>
+              <ellipse cx="46" cy="42" rx="8" ry="5" fill="#2a2830" stroke="#6a6080" stroke-width="1.5"/>
+              <!-- Dark aura -->
+              <ellipse cx="32" cy="32" rx="30" ry="30" fill="none" stroke="#4a3080" stroke-width="1" opacity="0.3"/>
+            </svg>
+          </div>
+          <div class="jrpg-speech-area">
+            <div class="jrpg-name-tag" id="jrpgName1">Dark Knight</div>
+            <div class="jrpg-bubble" id="jrpgBubble1">
+              <span class="jrpg-text" id="jrpgText1"></span>
+              <span class="jrpg-cursor" id="jrpgCursor1">▮</span>
+            </div>
+          </div>
+        </div>
 
-      <div class="side-battle-row">
-        <button class="side-back-btn" onclick="slideBack()">← <span id="diffBackText">Back</span></button>
-        <button class="diff-continue-btn side-battle-btn" id="diffContinueBtn" onclick="slideTo('s-sideselect')">
-          <span id="diffContinueText">Continue</span> →
+        <!-- Lich King (Hard) -->
+        <div class="jrpg-row" id="jrpgRow2" data-diff="lichking" onclick="jrpgSelect(2)">
+          <div class="jrpg-portrait jrpg-portrait-lich" id="jrpgPortrait2">
+            <!-- Lich King portrait image (swap in real asset when available) -->
+            <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+              <!-- Use the uploaded Lich portrait style approximation -->
+              <!-- Dark background -->
+              <circle cx="32" cy="32" r="30" fill="#1a1020" stroke="#6a3080" stroke-width="2"/>
+              <!-- Crown -->
+              <path d="M16 22 L14 10 L22 18 L32 8 L42 18 L50 10 L48 22" fill="#4a2060" stroke="#c8a0e0" stroke-width="1.5"/>
+              <!-- Skull face -->
+              <ellipse cx="32" cy="30" rx="13" ry="14" fill="#d0c8c0" stroke="#8a6080" stroke-width="1"/>
+              <!-- Eye sockets - glowing purple -->
+              <ellipse cx="26" cy="27" rx="4" ry="5" fill="#2a0a30"/>
+              <ellipse cx="38" cy="27" rx="4" ry="5" fill="#2a0a30"/>
+              <ellipse cx="26" cy="27" rx="2.5" ry="3" fill="#9040c0" opacity="0.9"/>
+              <ellipse cx="38" cy="27" rx="2.5" ry="3" fill="#9040c0" opacity="0.9"/>
+              <!-- Nose cavity -->
+              <path d="M30 33 L32 36 L34 33" fill="#2a0a30"/>
+              <!-- Lich grin -->
+              <path d="M22 39 Q32 45 42 39" fill="none" stroke="#8a6080" stroke-width="1.5"/>
+              <rect x="26" y="39" width="3" height="4" rx="0.5" fill="#d0c8c0"/>
+              <rect x="31" y="39" width="3" height="4" rx="0.5" fill="#d0c8c0"/>
+              <rect x="36" y="39" width="3" height="4" rx="0.5" fill="#d0c8c0"/>
+              <!-- Purple glow around eyes -->
+              <ellipse cx="26" cy="27" rx="5" ry="6" fill="none" stroke="#9040c0" stroke-width="1" opacity="0.5"/>
+              <ellipse cx="38" cy="27" rx="5" ry="6" fill="none" stroke="#9040c0" stroke-width="1" opacity="0.5"/>
+            </svg>
+          </div>
+          <div class="jrpg-speech-area">
+            <div class="jrpg-name-tag jrpg-name-lich" id="jrpgName2">Lich King</div>
+            <div class="jrpg-bubble jrpg-bubble-lich" id="jrpgBubble2">
+              <span class="jrpg-text" id="jrpgText2"></span>
+              <span class="jrpg-cursor" id="jrpgCursor2">▮</span>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /jrpg-roster -->
+
+      <!-- Bottom buttons -->
+      <div class="side-battle-row" style="padding:0 0 4px">
+        <button class="side-back-btn" onclick="jrpgBack()">← <span id="diffBackText">Back</span></button>
+        <button class="side-battle-btn" id="diffContinueBtn" onclick="jrpgContinue()">
+          ⚔ <span id="diffContinueText">Fight</span>
         </button>
       </div>
 
-    </div><!-- /diff-screen -->
+    </div><!-- /jrpg-screen -->
   </div>
 
 
@@ -2562,6 +2791,7 @@ function slideTo(targetId) {
   screenHistory.push(current.id);
   // Special screen init hooks
   if (targetId === 's-halloffame') setTimeout(openHallOfFame, 340);
+  if (targetId === 's-difficulty') setTimeout(openDifficultyScreen, 340);
 
   // Exit current to the left
   current.classList.add('exit-left');
@@ -2772,7 +3002,6 @@ function applyLang() {
   // Difficulty screen
   if (document.getElementById('diffTitle')) {
     document.getElementById('diffTitle').textContent           = d.diffTitle;
-    document.getElementById('diffSub').textContent             = d.diffSub;
     document.getElementById('diffContinueText').textContent    = d.diffContinue;
     const dbt = document.getElementById('diffBackText'); if(dbt) dbt.textContent = d.diffBack;
     document.querySelectorAll('.diff-card-name').forEach(el => {
@@ -5080,14 +5309,10 @@ function startBattle() {
 // ═══════════════════════════════════════════
 
 function selectDiff(card) {
-  // Deselect all
-  document.querySelectorAll('.diff-card').forEach(c => c.classList.remove('selected'));
-  card.classList.add('selected');
-  selectedDiff = card.dataset.diff;
-
-  // Lich King: red tint on continue button
-  const btn = document.getElementById('diffContinueBtn');
-  btn.classList.toggle('lich-selected', selectedDiff === 'lichking');
+  // Legacy function — JRPG screen uses jrpgSelect() instead
+  // Keep for safety in case called elsewhere
+  if (!card) return;
+  selectedDiff = card.dataset.diff || selectedDiff;
 }
 
 
@@ -5581,6 +5806,210 @@ function startTaglineRotation() {
 function stopTaglineRotation() {
   if (taglineTimer) { clearInterval(taglineTimer); taglineTimer = null; }
 }
+
+
+// ═══════════════════════════════════════════
+//  JRPG DIFFICULTY SCREEN
+// ═══════════════════════════════════════════
+
+// Dialogue lines per character, cycling independently
+const JRPG_DIALOGUE = {
+  en: {
+    0: [ // Skeleton
+      "Fresh bones incoming.",
+      "I died once. Won't stop me.",
+      "My strategy? Mostly falling apart.",
+      "I can't feel pain. Advantage: me.",
+      "Last guy said I was easy. He's one of us now.",
+    ],
+    1: [ // Dark Knight
+      "Choose me. I'll make it quick.",
+      "I've crushed better players before breakfast.",
+      "Don't embarrass yourself out there.",
+      "Three in a line. I've done it blindfolded.",
+      "You look nervous. Good.",
+    ],
+    2: [ // Lich King
+      "I have time.",
+      "I own time.",
+      "I've already seen how this ends.",
+      "Eternity is patient. Are you?",
+      "Your move. For all the good it will do.",
+      "I don't play to win. I play to remind you that you can lose.",
+    ],
+  },
+  sr: {
+    0: [
+      "Svežih kostiju ima.",
+      "Umro sam jednom. Nije me zaustavilo.",
+      "Moja strategija? Uglavnom raspadam se.",
+      "Ne osećam bol. Prednost: ja.",
+      "Poslednji je rekao da sam lak. Sada je jedan od nas.",
+    ],
+    1: [
+      "Izaberi mene. Biće brzo.",
+      "Lomio sam bolje igrače pre doručka.",
+      "Nemoj da se sramiš tamo.",
+      "Tri u nizu. Radio sam to zavezanih očiju.",
+      "Izgledaš nervozno. Dobro.",
+    ],
+    2: [
+      "Imam vremena.",
+      "Ja posedujem vreme.",
+      "Već sam video kako ovo završava.",
+      "Večnost je strpljiva. A ti?",
+      "Tvoj potez. Koliko god ti pomogao.",
+      "Ne igram da pobedim. Igram da te podsetim da možeš da izgubiš.",
+    ],
+  }
+};
+
+// Dialogue state
+let jrpgDialogIdx  = [0, 0, 0];   // current line index per character
+let jrpgTypingTimer = null;        // active typing interval
+let jrpgCycleTimer  = null;        // cycling setInterval
+let jrpgTypingQueue = [];          // queue of {charIdx, text} to type
+let jrpgIsTyping    = false;
+let jrpgSelectedIdx = 0;           // 0=Skeleton, 1=DarkKnight, 2=Lich
+
+// Difficulty mapping: row index → internal diff key
+const JRPG_DIFF = ['knight', 'warlord', 'lichking'];
+
+// Web Audio click synthesizer
+let jrpgAudioCtx = null;
+function jrpgClick() {
+  try {
+    if (!jrpgAudioCtx) jrpgAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = jrpgAudioCtx;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(800 + Math.random() * 400, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.04);
+    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.04);
+  } catch(e) {}
+}
+
+// Type text into a bubble, one character at a time
+function jrpgTypeText(charIdx, text, onDone) {
+  const textEl   = document.getElementById('jrpgText'   + charIdx);
+  const cursorEl = document.getElementById('jrpgCursor' + charIdx);
+  if (!textEl) return;
+
+  textEl.textContent = '';
+  if (cursorEl) cursorEl.classList.remove('hidden');
+
+  let i = 0;
+  const interval = setInterval(() => {
+    if (i < text.length) {
+      textEl.textContent += text[i];
+      if (text[i] !== ' ') jrpgClick();
+      i++;
+    } else {
+      clearInterval(interval);
+      if (cursorEl) cursorEl.classList.add('hidden');
+      if (onDone) onDone();
+    }
+  }, 38); // ms per character — tweak for speed
+
+  return interval;
+}
+
+// Process the typing queue — one character at a time, sequentially
+function jrpgProcessQueue() {
+  if (jrpgIsTyping || !jrpgTypingQueue.length) return;
+  jrpgIsTyping = true;
+  const { charIdx, text } = jrpgTypingQueue.shift();
+  jrpgTypingTimer = jrpgTypeText(charIdx, text, () => {
+    jrpgIsTyping = false;
+    // Small pause between characters speaking
+    setTimeout(jrpgProcessQueue, 400);
+  });
+}
+
+// Queue next dialogue line for a character
+function jrpgQueueLine(charIdx) {
+  const pool = JRPG_DIALOGUE[lang]?.[charIdx] || JRPG_DIALOGUE.en[charIdx];
+  const text  = pool[jrpgDialogIdx[charIdx] % pool.length];
+  jrpgDialogIdx[charIdx]++;
+  jrpgTypingQueue.push({ charIdx, text });
+  jrpgProcessQueue();
+}
+
+// Initial entrance: all three say their opening line in sequence
+function jrpgOpeningSequence() {
+  // Clear all bubbles first
+  [0,1,2].forEach(i => {
+    const el = document.getElementById('jrpgText' + i);
+    if (el) el.textContent = '';
+    const cur = document.getElementById('jrpgCursor' + i);
+    if (cur) cur.classList.remove('hidden');
+  });
+  jrpgTypingQueue = [];
+  jrpgIsTyping = false;
+
+  // Queue opening lines with delays between them
+  setTimeout(() => jrpgQueueLine(0), 300);
+  setTimeout(() => jrpgQueueLine(1), 300 + 1800);
+  setTimeout(() => jrpgQueueLine(2), 300 + 3600);
+}
+
+// Ongoing rotation — one random character says something every 5–7s
+function jrpgStartRotation() {
+  if (jrpgCycleTimer) clearInterval(jrpgCycleTimer);
+  jrpgCycleTimer = setInterval(() => {
+    const charIdx = Math.floor(Math.random() * 3);
+    jrpgQueueLine(charIdx);
+  }, 5500);
+}
+
+function jrpgStopRotation() {
+  if (jrpgCycleTimer) { clearInterval(jrpgCycleTimer); jrpgCycleTimer = null; }
+  if (jrpgTypingTimer) { clearInterval(jrpgTypingTimer); jrpgTypingTimer = null; }
+  jrpgTypingQueue = [];
+  jrpgIsTyping = false;
+}
+
+// Select a difficulty row
+function jrpgSelect(idx) {
+  jrpgSelectedIdx = idx;
+  document.querySelectorAll('.jrpg-row').forEach((row, i) => {
+    row.classList.toggle('selected', i === idx);
+  });
+  // Update selectedDiff for startBattle
+  selectedDiff = JRPG_DIFF[idx];
+
+  // Lich continue button goes red
+  const btn = document.getElementById('diffContinueBtn');
+  if (btn) btn.classList.toggle('lich-selected', idx === 2);
+}
+
+function jrpgBack() {
+  jrpgStopRotation();
+  slideBack();
+}
+
+function jrpgContinue() {
+  jrpgStopRotation();
+  slideTo('s-sideselect');
+}
+
+// Called when difficulty screen slides into view
+function openDifficultyScreen() {
+  // Default select Skeleton (index 0)
+  jrpgSelect(0);
+  jrpgDialogIdx = [0, 0, 0];
+  jrpgOpeningSequence();
+  setTimeout(jrpgStartRotation, 300 + 3600 + 2000); // after opening lines finish
+}
+
+// Wire into slideTo
+const _origSlideToDiff = slideTo;
 
 // ═══════════════════════════════════════════
 //  INIT
