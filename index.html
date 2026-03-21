@@ -1473,6 +1473,13 @@ h1 {
   border: none;
 }
 .win-sheet-btn-secondary:hover { border-color: var(--gold-dim) !important; color: var(--text); }
+.win-sheet-btn-analysis {
+  background: rgba(122,184,212,0.1);
+  border: 1px solid #4a7a94 !important;
+  color: #7ab8d4;
+}
+.win-sheet-btn-analysis:hover { background: rgba(122,184,212,0.2); }
+
 
 /* Speech bubble roast */
 .roast-bubble {
@@ -1764,6 +1771,202 @@ h1 {
 }
 .side-battle-btn:hover { filter: brightness(1.12); transform: translateY(-1px); box-shadow: 0 4px 24px rgba(200,168,75,0.3); }
 .side-battle-btn:active { transform: translateY(0); filter: brightness(0.95); }
+
+/* Win sheet backdrop — transparent so board stays fully visible */
+.win-backdrop-clear {
+  position: fixed;
+  inset: 0;
+  background: transparent;
+  z-index: 399;
+  pointer-events: none; /* don't block board interaction */
+}
+.win-backdrop-clear.open {
+  pointer-events: none; /* still don't block — board is interactive in analysis */
+}
+
+/* ══════════════════════════════════════════════
+   HALL OF FAME SCREEN
+══════════════════════════════════════════════ */
+.hof-screen {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  padding: clamp(32px,8vh,56px) 24px clamp(16px,3vh,28px);
+  gap: 0;
+}
+.hof-header { text-align: center; flex-shrink: 0; }
+.hof-title {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(1rem,4.5vw,1.3rem);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+
+/* Tabs */
+.hof-tabs {
+  display: flex;
+  gap: 6px;
+  margin: 16px 0 0;
+  flex-shrink: 0;
+}
+.hof-tab {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 2px;
+  color: var(--muted);
+  font-family: 'Cinzel', serif;
+  font-size: clamp(0.62rem,2.5vw,0.75rem);
+  letter-spacing: 0.08em;
+  padding: 9px 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-transform: uppercase;
+}
+.hof-tab:hover { border-color: var(--gold-dim); color: var(--text); }
+.hof-tab.active {
+  background: rgba(200,168,75,0.1);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.hof-sub {
+  font-style: italic;
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-align: center;
+  margin: 8px 0 12px;
+  flex-shrink: 0;
+}
+
+/* Leaderboard list */
+.hof-list {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+.hof-list::-webkit-scrollbar { width: 3px; }
+.hof-list::-webkit-scrollbar-thumb { background: var(--border2); }
+
+.hof-row {
+  display: grid;
+  grid-template-columns: 28px 1fr 44px 44px 52px;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.78rem;
+}
+.hof-row:last-child { border-bottom: none; }
+.hof-row.hof-row-you {
+  background: rgba(200,168,75,0.05);
+  border-radius: 2px;
+}
+.hof-rank {
+  font-family: 'Cinzel', serif;
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-align: center;
+}
+.hof-rank-gold   { color: #f0c040; font-weight: 700; }
+.hof-rank-silver { color: #b0b8c0; font-weight: 700; }
+.hof-rank-bronze { color: #c07840; font-weight: 700; }
+.hof-name {
+  font-family: 'Cinzel', serif;
+  font-size: 0.72rem;
+  color: var(--text);
+  letter-spacing: 0.04em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hof-name-you { color: var(--gold); }
+.hof-wins  { color: var(--gold); font-size: 0.72rem; text-align: center; font-family: 'Cinzel', serif; }
+.hof-moves { color: var(--muted); font-size: 0.68rem; text-align: center; }
+.hof-date  { color: var(--muted); font-size: 0.62rem; text-align: right; }
+
+.hof-header-row {
+  display: grid;
+  grid-template-columns: 28px 1fr 44px 44px 52px;
+  gap: 8px;
+  padding: 0 4px 8px;
+  border-bottom: 1px solid var(--border2);
+  margin-bottom: 4px;
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.hof-empty {
+  text-align: center;
+  color: var(--muted);
+  font-style: italic;
+  padding: 32px 0;
+  font-size: 0.82rem;
+  line-height: 1.7;
+}
+
+/* Loading dots */
+.hof-loading {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  padding: 32px 0;
+}
+.hof-loading-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--gold-dim);
+  animation: thinkDot 1.2s infinite;
+}
+.hof-loading-dot:nth-child(2) { animation-delay: 0.2s; }
+.hof-loading-dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* Local stats strip at bottom */
+.hof-local {
+  flex-shrink: 0;
+  padding: 10px 0 8px;
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.hof-local-stat {
+  text-align: center;
+}
+.hof-local-val {
+  font-family: 'Cinzel', serif;
+  font-size: 0.95rem;
+  color: var(--gold);
+  display: block;
+}
+.hof-local-lbl {
+  font-size: 0.6rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.hof-offline-note {
+  font-size: 0.65rem;
+  color: var(--muted);
+  font-style: italic;
+  text-align: center;
+  padding: 8px 0;
+  opacity: 0.7;
+}
+
+/* Rotating tagline fade */
+.tagline {
+  transition: opacity 0.8s ease;
+}
+.tagline.fade-out { opacity: 0; }
 </style>
 </head>
 <body>
@@ -1787,7 +1990,7 @@ h1 {
           <h1>Tic&#8209;Tac&#8209;Shuffle</h1>
         </div>
         <div class="subtitle">Dance of the Blades</div>
-        <div class="tagline">a knife fight in a phone booth</div>
+        <div class="tagline" id="taglineEl">a knife fight in a phone booth</div>
         <div class="divider"></div>
       </div>
 
@@ -2005,10 +2208,6 @@ h1 {
         <span class="gt-icon">💡</span>
         <span class="gt-label" data-en="Hint" data-sr="Pomoć">Hint</span>
       </button>
-      <button class="game-tool-btn" id="gtDraw" onclick="gameDraw()" title="Draw">
-        <span class="gt-icon">🤝</span>
-        <span class="gt-label" data-en="Draw" data-sr="Remi">Draw</span>
-      </button>
       <button class="game-tool-btn" id="gtMore" onclick="openMoreSheet()" title="More">
         <span class="gt-icon">⋯</span>
         <span class="gt-label" data-en="More" data-sr="Više">More</span>
@@ -2031,6 +2230,10 @@ h1 {
       <button class="sheet-item" onclick="sheetHistory()">
         <span class="sheet-item-icon">📜</span>
         <span class="sheet-item-label" data-en="History" data-sr="Istorija">History</span>
+      </button>
+      <button class="sheet-item" onclick="sheetHallOfFame()">
+        <span class="sheet-item-icon">🏆</span>
+        <span class="sheet-item-label" data-en="Hall of Fame" data-sr="Kuća Slavnih">Hall of Fame</span>
       </button>
       <button class="sheet-item" onclick="sheetNewGame()">
         <span class="sheet-item-icon">⚔</span>
@@ -2105,14 +2308,42 @@ h1 {
 
 
   <!-- ══════════════════════════════
-       SCREEN: HALL OF FAME (stub)
+       SCREEN: HALL OF FAME
   ══════════════════════════════ -->
   <div class="screen" id="s-halloffame">
-    <button class="back-btn" onclick="slideBack()">← Back</button>
-    <div class="screen-placeholder">
-      <div class="ph-title">🏆 Hall of Fame</div>
-      <div>Leaderboard — coming soon</div>
-    </div>
+
+    <div class="hof-screen">
+
+      <div class="hof-header">
+        <div class="hof-title" id="hofTitle">🏆 Hall of Fame</div>
+        <div class="divider" style="margin-top:10px"></div>
+      </div>
+
+      <!-- Difficulty tabs -->
+      <div class="hof-tabs">
+        <button class="hof-tab active" data-diff="medium" onclick="hofSelectTab(this,'medium')" id="hofTabMedium">Knight</button>
+        <button class="hof-tab" data-diff="hard"   onclick="hofSelectTab(this,'hard')"   id="hofTabHard">Warlord</button>
+        <button class="hof-tab" data-diff="epic"   onclick="hofSelectTab(this,'epic')"   id="hofTabEpic">Lich King</button>
+      </div>
+
+      <!-- Tab subtitle -->
+      <div class="hof-sub" id="hofSub">Top 10 victories</div>
+
+      <!-- Leaderboard list -->
+      <div class="hof-list" id="hofList">
+        <div class="hof-loading" id="hofLoading">
+          <span class="hof-loading-dot"></span>
+          <span class="hof-loading-dot"></span>
+          <span class="hof-loading-dot"></span>
+        </div>
+      </div>
+
+      <!-- Your local stats for this difficulty -->
+      <div class="hof-local" id="hofLocal"></div>
+
+      <button class="side-back-btn" style="width:100%;margin-top:8px" onclick="slideBack()">← Back</button>
+
+    </div><!-- /hof-screen -->
   </div>
 
 
@@ -2175,7 +2406,7 @@ h1 {
 
 
 <!-- WIN SHEET (slide-up, keeps board visible) -->
-<div class="sheet-backdrop" id="winBackdrop" onclick="winBackdropTap()"></div>
+<div class="win-backdrop-clear" id="winBackdrop"></div>
 <div class="win-sheet" id="winSheet">
   <div class="sheet-handle"></div>
   <div class="win-sheet-inner">
@@ -2287,6 +2518,9 @@ h1 {
 </div>
 
 
+<!-- InstantDB bundle — download from unpkg and save as instant.js in repo root -->
+<!-- https://www.unpkg.com/@instantdb/core@0.22.84/dist/standalone/index.umd.cjs -->
+<script src="instant.js"></script>
 <script>
 // ═══════════════════════════════════════════
 //  CONSTANTS — declared first, used everywhere
@@ -2305,6 +2539,8 @@ function slideTo(targetId) {
   if (!target || current === target) return;
 
   screenHistory.push(current.id);
+  // Special screen init hooks
+  if (targetId === 's-halloffame') setTimeout(openHallOfFame, 340);
 
   // Exit current to the left
   current.classList.add('exit-left');
@@ -2508,6 +2744,9 @@ function applyLang() {
       if (el.dataset[lang]) el.textContent = el.dataset[lang];
     });
   }
+
+  // Hall of Fame screen labels (language-aware)
+  if (document.getElementById('hofTitle')) hofUpdateTabLabels();
 
   // Difficulty screen
   if (document.getElementById('diffTitle')) {
@@ -3550,6 +3789,15 @@ function saveSnapshot() {
   G.undoStack.push(snap);
   if(G.undoStack.length > 5) G.undoStack.shift(); // cap at 5
   document.getElementById('undoBtn').disabled = false;
+  // Enable gtUndo once both players have at least 2 pieces on the board
+  const whitePieces = Object.values(G.board).filter(p => p.color === 'white').length;
+  const blackPieces = Object.values(G.board).filter(p => p.color === 'black').length;
+  const threshold = whitePieces >= 2 && blackPieces >= 2;
+  const rated = G.mode === 'rated' && !G.analysis;
+  const gtUndo = document.getElementById('gtUndo');
+  if (gtUndo && threshold && !(rated && G.undoUsed)) {
+    gtUndo.disabled = false;
+  }
 }
 
 function doPlace(type, c, r) {
@@ -3744,6 +3992,33 @@ function showWin(winner) {
       }, 340);
     };
     btnsEl.appendChild(undoBtn);
+  }
+
+  // Analysis / Continue Analysis button
+  if (G.undoStack.length > 0) {
+    const analyBtn = document.createElement('button');
+    analyBtn.className = 'win-sheet-btn win-sheet-btn-analysis';
+    if (G.analysis) {
+      // Already in analysis — offer to continue
+      analyBtn.textContent = lang === 'sr' ? '🔍 Nastavi analizu' : '🔍 Continue Analysis';
+      analyBtn.onclick = () => {
+        // Just close the sheet and resume — G.analysis already true
+        G.gameOver = false;
+        G.winner   = null;
+        G.winLine  = null;
+        G.selected = null;
+        closeWinSheet();
+        setTimeout(() => render(), 340);
+      };
+    } else {
+      // Fresh analysis entry
+      analyBtn.textContent = lang === 'sr' ? '🔍 Analiziraj' : '🔍 Analyse';
+      analyBtn.onclick = () => {
+        closeWinSheet();
+        setTimeout(() => enterAnalysisFromSheet(), 340);
+      };
+    }
+    btnsEl.appendChild(analyBtn);
   }
 
   // Play Again
@@ -4073,6 +4348,10 @@ function recordGame(diff, result, playerColor, moveCount, unrated) {
     log: G.moveHistory.map(m=>({...m}))
   });
   saveScores(diff, arr);
+  // Submit wins to global Hall of Fame (Medium, Hard, Epic only)
+  if (result === 'win') {
+    submitWinToHoF(diff, playerColor, moveCount);
+  }
 }
 
 function getTally(diff) {
@@ -4387,7 +4666,7 @@ function startGame(mode) {
   document.getElementById('gtUndo').disabled = true;
   document.getElementById('gtHint').disabled = false;
   document.getElementById('gtHint').classList.remove('hint-active');
-  document.getElementById('gtDraw').disabled = false;
+  // gtDraw removed from toolbar
   resizeBoard();
   render();
   if(G.aiColor==='white') { G.turn='white'; scheduleAI(); }
@@ -4502,7 +4781,7 @@ function initGameScreen() {
   document.getElementById('gtUndo').disabled = true;
   document.getElementById('gtHint').disabled = false;
   document.getElementById('gtHint').classList.remove('hint-active');
-  document.getElementById('gtDraw').disabled = false;
+  // gtDraw removed from toolbar
 
   // Render everything
   render();
@@ -4658,6 +4937,12 @@ function renderStatus() {
 //  TOOLBAR BUTTON WIRING
 // ═══════════════════════════════════════════
 function gameUndo() {
+  if (G.analysis) {
+    // Analysis mode: unlimited undo
+    doUndo();
+    document.getElementById('gtUndo').disabled = G.undoStack.length === 0;
+    return;
+  }
   doUndo();
   // Rated mode: mark undo spent and disable permanently
   const rated = G.mode === 'rated' && !G.analysis;
@@ -4673,16 +4958,34 @@ function gameHint() {
   btn.disabled = G.hintUses <= 0 && !G.hintAction;
 }
 
-function gameDraw() {
-  offerDraw();
-  document.getElementById('gtDraw').disabled = true;
-}
+// Draw offer removed — threefold repetition handles forced draws automatically
+function gameDraw() { /* removed */ }
 
 // Undo button sync happens inside gameUndo() directly
 
 // ═══════════════════════════════════════════
 //  WIN OVERLAY ACTIONS
 // ═══════════════════════════════════════════
+
+function enterAnalysisFromSheet() {
+  G.analysis = true;
+  G.gameOver = false;
+  G.winner   = null;
+  G.winLine  = null;
+  G.selected = null;
+  // Enable unlimited undo on toolbar
+  document.getElementById('gtUndo').disabled = G.undoStack.length === 0;
+  // Update mode badge to show Analysis
+  const modeBadgeEl = document.getElementById('gameModeBadge');
+  if (modeBadgeEl) {
+    modeBadgeEl.textContent = lang === 'sr' ? '🔍 Analiza' : '🔍 Analysis';
+    modeBadgeEl.style.color = '#7ab8d4';
+    modeBadgeEl.style.borderColor = '#4a7a94';
+  }
+  addLog(t('analysisDesc'), 'log-sys');
+  render();
+}
+
 function winGoMenu() {
   closeWinSheet();
   abandonGame();
@@ -4713,9 +5016,13 @@ function sheetRules() {
 }
 function sheetHistory() {
   closeMoreSheet();
-  // Open history for current difficulty
+  // Open local history for current difficulty
   const diff = DIFF_MAP[window.gameConfig?.diff] || 'easy';
   openHistory(diff);
+}
+function sheetHallOfFame() {
+  closeMoreSheet();
+  slideTo('s-halloffame');
 }
 function sheetNewGame() { closeMoreSheet(); abandonGame(); slideTo('s-difficulty'); }
 function sheetShare()   { closeMoreSheet(); shareGame(); }
@@ -4969,11 +5276,282 @@ function applySettingsLang() {
   applyOpeningToggle();
 }
 
+
+// ═══════════════════════════════════════════
+//  INSTANTDB — Hall of Fame (REST API, no CDN needed)
+// ═══════════════════════════════════════════
+const INSTANT_APP_ID = '9472496a-1981-4a67-aef4-452479972da2';
+
+// Map our difficulty names to v37 internal keys and display labels
+const HOF_DIFFS = {
+  medium: { tab: 'Knight',   v37: 'medium' },
+  hard:   { tab: 'Warlord',  v37: 'hard'   },
+  epic:   { tab: 'Lich King',v37: 'epic'   },
+};
+const HOF_DIFF_SR = {
+  medium: 'Vitez',
+  hard:   'Ratni Gospodar',
+  epic:   'Kralj Ličeva',
+};
+
+let localDeviceId = ''; // persistent device ID for name deduplication
+let hofCurrentDiff = 'medium';
+
+function generateDeviceId() {
+  const key = 'tts_device_id';
+  let id = localStorage.getItem(key);
+  if (!id) {
+    id = Math.random().toString(36).slice(2, 6);
+    localStorage.setItem(key, id);
+  }
+  return id;
+}
+
+async function initInstantDB() {
+  localDeviceId = generateDeviceId();
+  // Wait up to 3s for instant.js bundle to define window.instant
+  // (loaded via <script src="instant.js"> in the page)
+  let attempts = 0;
+  while (typeof instant === 'undefined' && attempts < 30) {
+    await new Promise(r => setTimeout(r, 100));
+    attempts++;
+  }
+  if (typeof instant === 'undefined') {
+    console.warn('InstantDB not available — offline mode. See instant-setup.md');
+    window._idb = null;
+    return;
+  }
+  try {
+    const { init, id: idbId } = instant;
+    const db = init({ appId: INSTANT_APP_ID });
+    window._idb = db;
+    window._idbId = idbId;
+    console.log('InstantDB ready');
+  } catch(e) {
+    console.warn('InstantDB init failed:', e.message);
+    window._idb = null;
+  }
+}
+
+// Generate a UUID v4
+function uuidv4() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0;
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
+
+// Called when a rated win is recorded
+async function submitWinToHoF(difficulty, playerColor, moveCount) {
+  if (!HOF_DIFFS[difficulty] || !window._idb) return;
+  const playerName = localStorage.getItem(NAME_KEY) || 'Anonymous';
+  const displayName = playerName + (localDeviceId ? '#' + localDeviceId : '');
+  try {
+    const idbId = window._idbId;
+    await window._idb.transact(
+      window._idb.tx.wins[idbId()].update({
+        name: displayName, deviceId: localDeviceId,
+        difficulty, color: playerColor, moves: moveCount,
+        date: new Date().toLocaleDateString('en-GB', {day:'2-digit', month:'short'}),
+        ts: Date.now(),
+      })
+    );
+  } catch(e) { console.warn('Win submit failed:', e); }
+}
+
+// ── Hall of Fame screen ──
+let hofCurrentTab = 'medium';
+let hofUnsubscribe = null;
+
+function hofSelectTab(btn, diff) {
+  document.querySelectorAll('.hof-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  hofCurrentTab = diff;
+  hofLoadLeaderboard(diff);
+}
+
+async function hofLoadLeaderboard(diff) {
+  document.getElementById('hofList').innerHTML =
+    '<div class="hof-loading"><span class="hof-loading-dot"></span><span class="hof-loading-dot"></span><span class="hof-loading-dot"></span></div>';
+  hofRenderLocal(diff);
+
+  if (!window._idb) { hofRenderOffline(diff); return; }
+
+  // Unsubscribe previous live query
+  if (hofUnsubscribe) { hofUnsubscribe(); hofUnsubscribe = null; }
+
+  hofUnsubscribe = window._idb.subscribeQuery(
+    { wins: { $: { where: { difficulty: diff } } } },
+    ({ data, error }) => {
+      if (error) { hofRenderOffline(diff); return; }
+      hofRenderList(data?.wins || [], diff);
+    }
+  );
+}
+
+function hofRenderList(wins, diff) {
+  const listEl = document.getElementById('hofList');
+  if (!wins.length) {
+    listEl.innerHTML = `<div class="hof-empty">${lang === 'sr' ? 'Nema pobeda još uvek.<br>Budi prvi!' : 'No victories yet.<br>Be the first!'}</div>`;
+    return;
+  }
+
+  // Aggregate: count wins per player, track best (fewest) moves and latest date
+  const players = {};
+  wins.forEach(w => {
+    const key = w.name;
+    if (!players[key]) players[key] = { name: w.name, deviceId: w.deviceId, wins: 0, bestMoves: Infinity, lastDate: '' };
+    players[key].wins++;
+    if (w.moves < players[key].bestMoves) {
+      players[key].bestMoves = w.moves;
+      players[key].lastDate  = w.date;
+    }
+  });
+
+  // Sort by wins desc, then by bestMoves asc
+  const sorted = Object.values(players)
+    .sort((a, b) => b.wins !== a.wins ? b.wins - a.wins : a.bestMoves - b.bestMoves)
+    .slice(0, 10);
+
+  const rankSymbols = ['🥇','🥈','🥉'];
+  const rankClasses = ['hof-rank-gold','hof-rank-silver','hof-rank-bronze'];
+
+  const isSr = lang === 'sr';
+  let html = `<div class="hof-header-row">
+    <div></div>
+    <div>${isSr ? 'Ime' : 'Name'}</div>
+    <div style="text-align:center">${isSr ? 'Pobede' : 'Wins'}</div>
+    <div style="text-align:center">${isSr ? 'Min.' : 'Best'}</div>
+    <div style="text-align:right">${isSr ? 'Datum' : 'Date'}</div>
+  </div>`;
+
+  sorted.forEach((p, i) => {
+    const isYou = p.deviceId === localDeviceId;
+    const rankEl = i < 3
+      ? `<span class="${rankClasses[i]}">${rankSymbols[i]}</span>`
+      : `<span class="hof-rank">${i + 1}</span>`;
+    const rowClass = isYou ? 'hof-row hof-row-you' : 'hof-row';
+    const nameClass = isYou ? 'hof-name hof-name-you' : 'hof-name';
+    html += `<div class="${rowClass}">
+      <div>${rankEl}</div>
+      <div class="${nameClass}" title="${p.name}">${p.name}</div>
+      <div class="hof-wins">${p.wins}</div>
+      <div class="hof-moves">${p.bestMoves === Infinity ? '—' : p.bestMoves}</div>
+      <div class="hof-date">${p.lastDate}</div>
+    </div>`;
+  });
+
+  listEl.innerHTML = html;
+}
+
+function hofRenderLocal(diff) {
+  const localEl = document.getElementById('hofLocal');
+  const isSr = lang === 'sr';
+
+  // Use v37 diff key to look up local scores
+  const v37diff = diff; // already matches (medium/hard/epic)
+  const arr = loadScores(v37diff);
+  const wins   = arr.filter(g => g.result === 'win').length;
+  const losses = arr.filter(g => g.result === 'loss').length;
+  const draws  = arr.filter(g => g.result === 'draw').length;
+  const total  = arr.length;
+  const winRate = total > 0 ? Math.round(wins / total * 100) : 0;
+
+  // Best streak
+  let bestStreak = 0, curStreak = 0;
+  arr.forEach(g => {
+    if (g.result === 'win') { curStreak++; bestStreak = Math.max(bestStreak, curStreak); }
+    else curStreak = 0;
+  });
+
+  if (total === 0) {
+    localEl.innerHTML = `<div class="hof-offline-note">${isSr ? 'Nema lokalnih igara' : 'No local games yet'}</div>`;
+    return;
+  }
+
+  localEl.innerHTML = `
+    <div class="hof-local-stat"><span class="hof-local-val">${wins}–${losses}${draws > 0 ? '–' + draws : ''}</span><span class="hof-local-lbl">${isSr ? 'Rekord' : 'Record'}</span></div>
+    <div class="hof-local-stat"><span class="hof-local-val">${winRate}%</span><span class="hof-local-lbl">${isSr ? 'Pobede %' : 'Win Rate'}</span></div>
+    <div class="hof-local-stat"><span class="hof-local-val">${bestStreak === 0 ? '—' : bestStreak + (bestStreak === 1 ? '' : '')}</span><span class="hof-local-lbl">${isSr ? 'Niz pobeda' : 'Best Streak'}</span></div>
+  `;
+}
+
+function hofRenderOffline(diff) {
+  const isSr = lang === 'sr';
+  document.getElementById('hofList').innerHTML =
+    `<div class="hof-empty" style="font-size:0.75rem">${isSr ? 'Globalna lista nedostupna.<br>Proverite vezu.' : 'Global leaderboard unavailable.<br>Check your connection.'}</div>`;
+  hofRenderLocal(diff);
+}
+
+// Called when Hall of Fame screen becomes active
+function openHallOfFame() {
+  hofCurrentTab = 'medium';
+  // Reset tabs
+  document.querySelectorAll('.hof-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('hofTabMedium').classList.add('active');
+  // Update tab labels for current language
+  hofUpdateTabLabels();
+  // Load
+  hofLoadLeaderboard('medium');
+}
+
+function hofUpdateTabLabels() {
+  const isSr = lang === 'sr';
+  document.getElementById('hofTabMedium').textContent = isSr ? 'Vitez'          : 'Knight';
+  document.getElementById('hofTabHard').textContent   = isSr ? 'Ratni Gospodar' : 'Warlord';
+  document.getElementById('hofTabEpic').textContent   = isSr ? 'Kralj Ličeva'   : 'Lich King';
+  const hofTitle = document.getElementById('hofTitle');
+  if (hofTitle) hofTitle.textContent = (isSr ? '🏆 Kuća Slavnih' : '🏆 Hall of Fame');
+  const hofSub = document.getElementById('hofSub');
+  if (hofSub) hofSub.textContent = isSr ? 'Top 10 pobeda' : 'Top 10 victories';
+}
+
+
+// ═══════════════════════════════════════════
+//  ROTATING TAGLINES
+// ═══════════════════════════════════════════
+const TAGLINES = {
+  en: [
+    'a knife fight in a phone booth',
+    'Six pieces. One battlefield. No escape.',
+    'The board is small. The war is not.',
+    "Three in a line. Simple. Until it isn't.",
+  ],
+  sr: [
+    'tuča noževima u telefonskoj govornici',
+    'Šest figura. Jedno bojno polje. Nema izlaza.',
+    'Tabla je mala. Rat nije.',
+    "Tri u nizu. Prosto. Sve dok nije.",
+  ]
+};
+
+let taglineIndex = 0;
+let taglineTimer = null;
+
+function startTaglineRotation() {
+  const el = document.getElementById('taglineEl');
+  if (!el) return;
+  taglineTimer = setInterval(() => {
+    el.classList.add('fade-out');
+    setTimeout(() => {
+      taglineIndex = (taglineIndex + 1) % TAGLINES.en.length;
+      el.textContent = TAGLINES[lang]?.[taglineIndex] || TAGLINES.en[taglineIndex];
+      el.classList.remove('fade-out');
+    }, 800);
+  }, 6000);
+}
+
+function stopTaglineRotation() {
+  if (taglineTimer) { clearInterval(taglineTimer); taglineTimer = null; }
+}
+
 // ═══════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════
 loadName();
 initSettings();
+initInstantDB();
+startTaglineRotation();
 </script>
 </body>
 </html>
