@@ -5348,7 +5348,7 @@ async function submitWinToHoF(difficulty, playerColor, moveCount) {
   const displayName = playerName + (localDeviceId ? '#' + localDeviceId : '');
   try {
     const idbId = window._idbId;
-    await window._idb.transact(
+    const result = await window._idb.transact(
       window._idb.tx.wins[idbId()].update({
         name: displayName, deviceId: localDeviceId,
         difficulty, color: playerColor, moves: moveCount,
@@ -5356,7 +5356,8 @@ async function submitWinToHoF(difficulty, playerColor, moveCount) {
         ts: Date.now(),
       })
     );
-  } catch(e) { console.warn('Win submit failed:', e); }
+    console.log('Win submitted to HoF:', displayName, difficulty, result);
+  } catch(e) { console.warn('Win submit failed:', e.message || e); }
 }
 
 // ── Hall of Fame screen ──
@@ -5375,7 +5376,15 @@ async function hofLoadLeaderboard(diff) {
     '<div class="hof-loading"><span class="hof-loading-dot"></span><span class="hof-loading-dot"></span><span class="hof-loading-dot"></span></div>';
   hofRenderLocal(diff);
 
-  if (!window._idb) { hofRenderOffline(diff); return; }
+  // If InstantDB isn't ready yet (still initializing), wait briefly and retry
+  if (!window._idb) {
+    let wait = 0;
+    while (!window._idb && wait < 30) {
+      await new Promise(r => setTimeout(r, 100));
+      wait++;
+    }
+    if (!window._idb) { hofRenderOffline(diff); return; }
+  }
 
   // Unsubscribe previous live query
   if (hofUnsubscribe) { hofUnsubscribe(); hofUnsubscribe = null; }
@@ -5383,7 +5392,12 @@ async function hofLoadLeaderboard(diff) {
   hofUnsubscribe = window._idb.subscribeQuery(
     { wins: { $: { where: { difficulty: diff } } } },
     ({ data, error }) => {
-      if (error) { hofRenderOffline(diff); return; }
+      if (error) {
+        console.warn('HoF query error:', JSON.stringify(error));
+        hofRenderOffline(diff);
+        return;
+      }
+      console.log('HoF data received:', diff, data?.wins?.length, 'entries');
       hofRenderList(data?.wins || [], diff);
     }
   );
