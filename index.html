@@ -2150,6 +2150,61 @@ h1 {
 /* Selected highlight on portrait */
 .jrpg-row.selected .jrpg-portrait { border-color: var(--gold); }
 .jrpg-row[data-diff="lichking"].selected .jrpg-portrait { border-color: #9040c0; }
+
+/* ══════════════════════════════════════════════
+   BACKGROUND IMAGE THEMING
+══════════════════════════════════════════════ */
+
+/* Main menu — fully transparent, castle bg shows through */
+#s-menu {
+  background: transparent;
+}
+
+/* All other screens — dark overlay so UI stays readable */
+#s-difficulty,
+#s-sideselect,
+#s-game,
+#s-settings,
+#s-halloffame,
+#s-changelog,
+#s-halloffame {
+  background: rgba(14, 12, 9, 0.82);
+}
+
+/* Menu content needs slight backdrop for text readability */
+.menu-title-area {
+  text-shadow: 0 2px 20px rgba(0,0,0,0.8);
+}
+.menu-title {
+  text-shadow: 0 0 40px rgba(200,168,75,0.6), 0 2px 20px rgba(0,0,0,0.9);
+}
+.tagline {
+  text-shadow: 0 1px 8px rgba(0,0,0,0.9);
+}
+
+/* Frosted glass effect on menu buttons */
+.menu-btn {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* Name row at bottom needs backdrop */
+.name-row {
+  background: rgba(14,12,9,0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 4px;
+  padding: 6px 12px;
+}
+
+/* Icon strip backdrop */
+.icon-strip {
+  background: rgba(14,12,9,0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 4px;
+  padding: 4px 8px;
+}
 </style>
 </head>
 <body>
